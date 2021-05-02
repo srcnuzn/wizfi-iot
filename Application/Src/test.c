@@ -7,9 +7,9 @@
 
 #include "test.h"
 #include "ringbuffer.h"
+#include "string.h"
 
 #define RX_BUFFER_SIZE 32
-#define send(X) (HAL_UART_Transmit(&huart2, (uint8_t*)(X), sizeof((X))-1, 10000))
 
 uint8_t aRXBufferUser[RX_BUFFER_SIZE];
 
@@ -28,8 +28,6 @@ const char* WIZFI360TAGS[] =
 	"\r\nbusy p...\r\n",
 };
 
-//Das ist ein OK Tag
-const char* OK_TAG = "\r\nOK\r\n";
 
 uint8_t MATCH_COUNTER[11] = {0};
 
@@ -64,6 +62,12 @@ void testInit()
 }
 
 
+//Das ist ein OK Tag
+const char* OK_TAG = "\r\nOK\r\n";
+uint8_t echo_enabled = 1;
+
+char command[32];
+
 void testRun()
 {
 	if (doStep)
@@ -72,17 +76,103 @@ void testRun()
 
 		if (++ctr == 4)
 		{
-			send("AT+GMR\r\n");
+
 			ctr = 0;
 		}
 		doStep = 0;
 	}
+
+	// Searching for: 	\r\nOK\r\n
+	// Expecting: 		AT\r\n\r\nOK\r\n
+
+	if(ring_buffer_num_items(&uart2_rbuf) > 0)
+	{
+		uint8_t ctr = 0;
+		uint8_t okTagFound = 0;
+
+		for(int i = 0; i < ring_buffer_num_items(&uart2_rbuf); i++)
+		{
+			char tmp;
+			ring_buffer_peek(&uart2_rbuf, &tmp, i);
+
+			if (tmp == OK_TAG[ctr])
+			{
+				ctr++;
+
+				if(ctr >= strlen(OK_TAG))
+				{
+					okTagFound = 1;
+					const uint8_t length = i-ctr+1; //Länge der Payload (Echo+Daten)
+
+					uint8_t payload[length];
+					uint8_t dummy[strlen(OK_TAG)];
+
+					/*
+					 * TODO: Extract Echo if enabled, and then payload, and then tag
+					 */
+
+					ring_buffer_dequeue_arr(&uart2_rbuf, payload, length);
+
+					EvaluatePayload(payload, length);
+
+					ring_buffer_dequeue_arr(&uart2_rbuf, dummy, strlen(OK_TAG));
+
+					__NOP();
+				}
+			}
+			else if (tmp == OK_TAG[0])
+			{
+				ctr = 1;
+			}
+			else
+			{
+				ctr = 0;
+			}
+		}
+	}
+}
+
+void SendUart(const char* cmd)
+{
+	for(int i = 0; i < strlen(cmd); i++)
+	{
+		command[i] = cmd[i];
+	}
+	HAL_UART_Transmit(&huart2, (uint8_t*)(command), strlen(command), 10000);
+
+}
+
+
+void EvaluatePayload(uint8_t* payload, uint8_t length)
+{
+	if (echo_enabled)
+	{
+		int cmd_len = strlen(command);
+		__NOP();
+		if(length != cmd_len)
+		{
+			//Echo error
+			return;
+		}
+
+		for (int i = 0; i < strlen(command); i++)
+		{
+			if(command[i] != payload[i])
+			{
+				//Echo-Error
+				return;
+
+			}
+		}
+	}
+	__NOP();
 }
 
 
 static void Init()
 {
 	HAL_TIM_Base_Start_IT(&htim2);
+	SendUart("AT+GMR\r\n");
 }
 
 
@@ -106,34 +196,7 @@ void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size)
 	 * During this processing of already received data, reception is still ongoing.
 	 *
 	 */
-	__NOP();
-
-	for (int i = 0; i < Size; i++)
-	{
-		ring_buffer_queue(&uart2_rbuf, pData[i]);
-
-		for (int j = 0; j < 10; j++)
-		{
-			if (pData[i] == WIZFI360TAGS[j][MATCH_COUNTER[j]])
-			{
-				MATCH_COUNTER[j]++;
-				if (MATCH_COUNTER[j] == sizeof(WIZFI360TAGS[j]) - 1)
-				{
-					SuccessCallback(j);
-					MATCH_COUNTER[j] = 0;
-				}
-			}
-			else if (pData[i] == WIZFI360TAGS[j][0])
-			{
-				MATCH_COUNTER[j] = 1;
-			}
-			else
-			{
-				MATCH_COUNTER[j] = 0;
-			}
-		}
-	}
-	__NOP();
+	ring_buffer_queue_arr(&uart2_rbuf, pData, Size);
 }
 
 
