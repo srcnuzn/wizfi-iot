@@ -28,6 +28,7 @@ const char* WIZFI360TAGS[] =
 	"\r\nbusy p...\r\n",
 };
 
+//Das ist ein OK Tag
 const char* OK_TAG = "\r\nOK\r\n";
 
 uint8_t MATCH_COUNTER[11] = {0};
