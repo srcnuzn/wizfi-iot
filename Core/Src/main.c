@@ -18,11 +18,11 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <wizfi360.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -97,7 +97,7 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
-  testInit();
+  WIZFI360_Initialize();
 
   /* USER CODE END 2 */
 
@@ -105,7 +105,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  testRun();
+	  WIZFI360_Process();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
