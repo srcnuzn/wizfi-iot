@@ -54,7 +54,6 @@ void WIZFI360_Initialize()
 void WIZFI360_Process()
 {
 	// TODO: Remove statemachine (just a test)
-
 	static uint8_t currentState = 0;
 	switch(currentState)
 	{
@@ -89,6 +88,7 @@ void WIZFI360_Process()
 		case 4:
 		{
 			SendCommand("AT+CWJAP_CUR=\"Blub\",\"542684521489358\"\r\n");
+			//SendCommand("AT+CWJAP_CUR=\"Barefoot_IoT\",\"0919273540346\"\r\n");
 			currentState++;
 			break;
 		}
