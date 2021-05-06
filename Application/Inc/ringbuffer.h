@@ -28,7 +28,7 @@
 /*
  * TODO: CHECK DATATYPE (uint8_t too small?)
  */
-typedef uint8_t ring_buffer_size_t;
+typedef uint32_t ring_buffer_size_t;
 
 /**
  * Used as a modulo operator

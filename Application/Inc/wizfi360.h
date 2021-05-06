@@ -9,6 +9,7 @@
 #define INC_WIZFI360_H_
 
 #include "main.h"
+#include "wizfi360_def.h"
 
 void WIZFI360_Initialize();
 void WIZFI360_Process();
