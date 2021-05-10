@@ -11,7 +11,7 @@
 
 // Target specific code section starts here....
 
-#define RX_DMA_BUFFER_SIZE 32
+#define RX_DMA_BUFFER_SIZE 128
 
 uint8_t aRXBufferUser[RX_DMA_BUFFER_SIZE];
 uint8_t aRXBufferA[RX_DMA_BUFFER_SIZE];
