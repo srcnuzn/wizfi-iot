@@ -113,9 +113,19 @@ void WIZFI360_UART_SendBlockingMode(uint8_t* pData, uint16_t Size, uint16_t Time
  * @param len The maximum number of bytes to return.
  * @return The number of bytes returned.
  */
-ring_buffer_size_t WIZFI360_UART_ReadFromBuffer(uint8_t *data, uint16_t len)
+ring_buffer_size_t WIZFI360_UART_ReadArrayFromBuffer(uint8_t *data, uint16_t len)
 {
 	return ring_buffer_dequeue_arr(&rbuffer, (char*) data, len);
+}
+
+/**
+ * Returns the oldest byte in  UART ring buffer.
+ * @param data A pointer to the location at which the data should be placed.
+ * @return 1 if data was returned; 0 otherwise.
+ */
+uint8_t WIZFI360_UART_ReadByteFromBuffer(uint8_t *data)
+{
+	return ring_buffer_dequeue(&rbuffer, (char*) data);
 }
 
 /**
