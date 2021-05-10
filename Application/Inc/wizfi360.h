@@ -12,9 +12,12 @@
 #include "wizfi360_def.h"
 
 
-#define WIZFI360_MAX_CMD_LEN 			128
-#define WIZFI360_MAX_PWD_LEN 			 64
-#define WIZFI360_MAX_SSID_LEN 			 32
+#define WIZFI360_MAX_CMD_LEN 				128
+#define WIZFI360_MAX_AP_PWD_LEN 			 64
+#define WIZFI360_MAX_AP_SSID_LEN 			 32
+#define WIZFI360_MAX_MQQT_USERNAME_LEN		 50
+#define WIZFI360_MAX_MQQT_PWD_LEN			 50
+#define WIZFI360_MAX_MQQT_CLIENTID_LEN		 50
 
 #define WIZFI360_NUM_TAGS 	18
 
@@ -154,6 +157,15 @@ typedef enum
 }WIZFI360_DhcpModeTypeDef;
 
 /**
+  * @brief WIZFI360 MQQT authentication mode definition
+  */
+typedef enum
+{
+	WIZFI360_MQQT_AUTH_ENABLE,				/*!< Enables MQQT authentication (userName/password needed) */
+	WIZFI360_MQQT_AUTH_DISABLE				/*!< Disable MQQT authentication (userName/password not needed) */
+}WIZFI360_MqqtAuthModeTypeDef;
+
+/**
   * @brief WIZFI360 command id definition
   */
 typedef enum
@@ -186,6 +198,18 @@ typedef enum
 															<en>
 																	0: Disables DHCP
 																	1: Enables DHCP
+												Response:	OK
+										*/
+	WIZFI360_CMD_ID_MQTTSET,				/*!< 	TODO: comment
+												Usage:
+												Response:	OK
+										*/
+	WIZFI360_CMD_ID_MQTTTOPIC,				/*!< 	TODO: comment
+												Usage:
+												Response:	OK
+										*/
+	WIZFI360_CMD_ID_MQTTCON,				/*!< 	TODO: comment
+												Usage:
 												Response:	OK
 										*/
 } WIZFI360_CommandIdTypeDef;
@@ -225,6 +249,9 @@ WIZFI360_State WIZFI360_GetState();
 void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* password);
 void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode);
 void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
-
+void WIZFI360_MqqtInit(const char* userName, const char*  pwd,
+		const char* clientId, uint16_t aliveTime );
+void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic);
+void WIZFI360_MqqtConnectToBroker(uint8_t enable, const char*  mqttBrokerIP, uint16_t mqttBrokerPort);
 
 #endif /* INC_WIZFI360_H_ */

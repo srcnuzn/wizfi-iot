@@ -11,7 +11,8 @@
 
 #include <wizfi360_uart.h>
 #include "wizfi360.h"
-#include "string.h"
+#include <string.h>
+#include <stdio.h>
 
 /*********************************************************************************************/
 
@@ -135,7 +136,7 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	const int ssidLength = strlen(ssid);
 
 	// If the SSID is too long...
-	if (ssidLength > WIZFI360_MAX_SSID_LEN)
+	if (ssidLength > WIZFI360_MAX_AP_SSID_LEN)
 	{
 		// TODO: Error handling
 		ErrorHandler();
@@ -145,7 +146,7 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	const int pwdLength  = strlen(pwd);
 
 	// If the password is too long
-	if (pwdLength > WIZFI360_MAX_PWD_LEN)
+	if (pwdLength > WIZFI360_MAX_AP_PWD_LEN)
 	{
 		// TODO: Error handling
 		ErrorHandler();
@@ -379,6 +380,305 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 	}
 
 	// Append <CR><LF>
+	strcat(wizfi360.CommandBuffer, "\r\n");
+
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+
+	// We expect a response for this command.
+	wizfi360.ExpectingResponse = 1;
+
+	// If echo mode is enabled...
+	if (wizfi360.EchoEnabled)
+	{
+		// We expect an echo for this command
+		wizfi360.ExpectingEcho = 1;
+	}
+}
+
+
+/**
+ * @brief	Sets the Configuration of MQTT connection.
+ * @note	This command should be set before connecting to a broker.
+ * @note	There must be no ongoing AT command.
+ * @param	userName   	string parameter, User Name used in the broker authentication Max: 50byte
+ * @param	pwd     	string parameter, Password used in the broker authentication. Max: 50byte
+ * @param	ClientID    string parameter, Client ID connected to the broker. Max: 50byte
+ * @param	aliveTime   keep-alive time setting with the broker within the range of 30s~300s.
+ * @retval	None
+ */
+void WIZFI360_MqqtInit(const char* userName, const char*  pwd,
+		const char* clientId, uint16_t aliveTime )
+{
+	// If there is an ongoing AT command...
+	if (wizfi360.ExpectingResponse)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+	// If the module is not in station mode...
+	if (wizfi360.Mode != WIZFI360_MODE_STATION)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// The length of the user name
+	const int userNameLength = strlen(userName);
+
+	// If the userName is too long...
+	if (userNameLength > WIZFI360_MAX_MQQT_USERNAME_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// The length of the mqqt password
+	const int pwdLength  = strlen(pwd);
+
+	// If the password is too long
+	if (pwdLength > WIZFI360_MAX_MQQT_PWD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// The length of the client id
+	const int clientIdLength = strlen(clientId);
+
+	// If the clientId is too long...
+	if (clientIdLength > WIZFI360_MAX_MQQT_CLIENTID_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Build string from alive time
+	char sAliveTime[6] = {0};
+	sprintf(sAliveTime, "%d", aliveTime);
+
+
+
+	// The length of the command (example: AT+CWJAP_CUR="ssid","pwd"<CR><LF>)
+	const int cmdLength =
+		strlen("AT+MQTTSET=")
+		+ 6						// username, password and clientId are wrapped in quotation marks
+		+ 3						// and are separated by this amount of commas
+		+ userNameLength
+		+ pwdLength
+		+ clientIdLength
+		+ strlen(sAliveTime)	// the length of alive time (as string)
+		+ 2;					// command ends with <CR><LF>
+
+	// If the command is too long...
+	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Write the command id into wizfi360 structure
+	wizfi360.CommandId = WIZFI360_CMD_ID_MQTTSET;
+
+	// Write the command length into wizfi360 structure
+	wizfi360.CommandLength = cmdLength;
+
+	// Empty the command buffer string
+	wizfi360.CommandBuffer[0] = '\0';
+
+	// Build the command
+	strcat(wizfi360.CommandBuffer, "AT+MQTTSET=");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, userName);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, ",");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, pwd);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, ",");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, clientId);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, ",");
+	strcat(wizfi360.CommandBuffer, sAliveTime);
+	strcat(wizfi360.CommandBuffer, "\r\n");
+
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+
+	// We expect a response for this command.
+	wizfi360.ExpectingResponse = 1;
+
+	// If echo mode is enabled...
+	if (wizfi360.EchoEnabled)
+	{
+		// We expect an echo for this command
+		wizfi360.ExpectingEcho = 1;
+	}
+}
+
+
+/**
+ * TODO: comment
+ * @brief	Sets the Topic of Publish and Subscribe
+ * @note	This command should be set before connecting to a broker.
+ * @note	There must be no ongoing AT command.
+ * @param	userName   	string parameter, User Name used in the broker authentication Max: 50byte
+ * @param	pwd     	string parameter, Password used in the broker authentication. Max: 50byte
+ * @param	ClientID    string parameter, Client ID connected to the broker. Max: 50byte
+ * @param	aliveTime   keep-alive time setting with the broker within the range of 30s~300s.
+ * @retval	None
+ */
+void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic)
+{
+	// If there is an ongoing AT command...
+	if (wizfi360.ExpectingResponse)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+	// If the module is not in station mode...
+	if (wizfi360.Mode != WIZFI360_MODE_STATION)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// TODO: comments
+	// The length of the command (example: AT+CWJAP_CUR="ssid","pwd"<CR><LF>)
+	const int cmdLength =
+		strlen("AT+MQTTTOPIC=")
+		+ 4						// username, password and clientId are wrapped in quotation marks
+		+ 1						// and are separated by this amount of commas
+		+ strlen(publishTopic)
+		+ strlen(subscribeTopic)
+		+ 2;					// command ends with <CR><LF>
+
+	// If the command is too long...
+	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Write the command id into wizfi360 structure
+	wizfi360.CommandId = WIZFI360_CMD_ID_MQTTTOPIC;
+
+	// Write the command length into wizfi360 structure
+	wizfi360.CommandLength = cmdLength;
+
+	// Empty the command buffer string
+	wizfi360.CommandBuffer[0] = '\0';
+
+	// Build the command
+	strcat(wizfi360.CommandBuffer, "AT+MQTTTOPIC=");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, publishTopic);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, ",");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, subscribeTopic);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, "\r\n");
+
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+
+	// We expect a response for this command.
+	wizfi360.ExpectingResponse = 1;
+
+	// If echo mode is enabled...
+	if (wizfi360.EchoEnabled)
+	{
+		// We expect an echo for this command
+		wizfi360.ExpectingEcho = 1;
+	}
+}
+
+
+/**
+ * TODO: comment
+ * @brief	: Connects to a Broker
+ * @note	There must be no ongoing AT command.
+ * @param	enable			Decides, whether to connect to a broker with/without authentication
+ * @param	mqttBrokerIP	string parameter, Password used in the broker authentication. Max: 50byte
+ * @param	mqttBrokerPort 	the broker port number
+ * @retval	None
+ */
+void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef enable,
+		const char*  mqttBrokerIP, uint16_t mqttBrokerPort)
+{
+	// If there is an ongoing AT command...
+	if (wizfi360.ExpectingResponse)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+	// If the module is not in station mode...
+	if (wizfi360.Mode != WIZFI360_MODE_STATION)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Build string from alive time
+	char sPort[6] = {0};
+	sprintf(sPort, "%d", mqttBrokerPort);
+
+	// TODO: comments
+	// The length of the command (example: AT+MQTTCON=0,"35.156.215.0",1883<CR><LF>)
+	const int cmdLength =
+		strlen("AT+MQTTCON=")
+		+ 2						// username, password and clientId are wrapped in quotation marks
+		+ 2						// and are separated by this amount of commas
+		+ 1						// enable is 0 or 1
+		+ strlen(sPort)
+		+ strlen(mqttBrokerIP)
+		+ 2;					// command ends with <CR><LF>
+
+	// If the command is too long...
+	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Write the command id into wizfi360 structure
+	wizfi360.CommandId = WIZFI360_CMD_ID_MQTTCON;
+
+	// Write the command length into wizfi360 structure
+	wizfi360.CommandLength = cmdLength;
+
+	// Empty the command buffer string
+	wizfi360.CommandBuffer[0] = '\0';
+
+	// Build the command
+	strcat(wizfi360.CommandBuffer, "AT+MQTTCON=");
+
+	switch (enable)
+	{
+		case WIZFI360_MQQT_AUTH_DISABLE:
+		{
+			strcat(wizfi360.CommandBuffer, "0");
+			break;
+		}
+		case WIZFI360_MQQT_AUTH_ENABLE:
+		{
+			strcat(wizfi360.CommandBuffer, "1");
+			break;
+		}
+		default:
+		{
+			// TODO: Error handling
+			ErrorHandler();
+		}
+	}
+	strcat(wizfi360.CommandBuffer, ",");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, mqttBrokerIP);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, ",");
+	strcat(wizfi360.CommandBuffer, sPort);
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
 	// Send the command
