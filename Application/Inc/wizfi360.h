@@ -8,9 +8,15 @@
 #ifndef INC_WIZFI360_H_
 #define INC_WIZFI360_H_
 
-#include "main.h"
+/*********************************************************************************************/
+
+/* Includes ---------------------------------------------------------*/
+
 #include "wizfi360_def.h"
 
+/*********************************************************************************************/
+
+/* Defines ---------------------------------------------------------*/
 
 #define WIZFI360_MAX_CMD_LEN 				128
 #define WIZFI360_MAX_AP_PWD_LEN 			 64
@@ -42,6 +48,9 @@
 #define WIZFI360_TAG_STA_DISCONNECTED		"+STA_DISCONNECTED:"
 
 
+/*********************************************************************************************/
+
+/* Macro definitions ---------------------------------------------------------*/
 
 /** @brief  Checks if the tag id is a response tag.
   * @note	Response tags are expected, when AT command is evaluated
@@ -82,6 +91,9 @@
 	)
 
 
+/*********************************************************************************************/
+
+/* Type definitions ---------------------------------------------------------*/
 
 /**
   * @brief 	WIZFI360 tag id definition
@@ -109,7 +121,7 @@ typedef enum
 																		command.
  	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 */
 	WIZFI360_TAG_ID_SEND_OK,				/*!< The network data transmission is success. */
-	WIZFI360_TAG_ID_FAIL,					/*!< TODO: COMMENT */
+	WIZFI360_TAG_ID_FAIL,					/*!< Connecting to AP failed or connection is lost. */
 	WIZFI360_TAG_ID_READY,					/*!< The AT firmware is ready. */
 	WIZFI360_TAG_ID_WIFI_CONNECTED,			/*!< WizFi360 Station connected to the AP */
 	WIZFI360_TAG_ID_WIFI_GOT_IP,			/*!< WizFi360 Station got IP address from the AP */
@@ -137,15 +149,17 @@ typedef enum
 	WIZFI360_MODE_BOTH,					/*!<  Station + SoftAP mode */
 } WIZFI360_ModeTypeDef;
 
+
 /**
   * @brief WIZFI360 mode definition
   */
 typedef enum
 {
-	WIZFI360_STATE_READY,				/*!< TODO: Comment */
-	WIZFI360_STATE_BUSY,				/*!< TODO: Comment */
-	WIZFI360_STATE_UNKNOWN,				/*!< TODO: Comment */
+	WIZFI360_STATE_READY,				/*!< The module is ready for AT command reception. */
+	WIZFI360_STATE_BUSY,				/*!< The module is busy. An AT command is already ongoing. */
+	WIZFI360_STATE_UNKNOWN,				/*!< The modules state is unknown. */
 } WIZFI360_State;
+
 
 /**
   * @brief WIZFI360 DHCP mode definition
@@ -156,6 +170,7 @@ typedef enum
 	WIZFI360_DHCP_DISABLE				/*!< Disable DHCP */
 }WIZFI360_DhcpModeTypeDef;
 
+
 /**
   * @brief WIZFI360 MQQT authentication mode definition
   */
@@ -164,6 +179,7 @@ typedef enum
 	WIZFI360_MQQT_AUTH_ENABLE,				/*!< Enables MQQT authentication (userName/password needed) */
 	WIZFI360_MQQT_AUTH_DISABLE				/*!< Disable MQQT authentication (userName/password not needed) */
 }WIZFI360_MqqtAuthModeTypeDef;
+
 
 /**
   * @brief WIZFI360 command id definition
@@ -200,23 +216,40 @@ typedef enum
 																	1: Enables DHCP
 												Response:	OK
 										*/
-	WIZFI360_CMD_ID_MQTTSET,				/*!< 	TODO: comment
-												Usage:
+	WIZFI360_CMD_ID_MQTTSET,			/*!<	Sets the Configuration of MQTT connection.
+												Usage:		AT+MQTTSET=<User Name>,<Password>,<ClientID>,<AliveTime>
+															<User Name> string parameter, User Name used in the broker
+																		authentication Max: 50byte
+															<Password>	string parameter, Password used in the broker
+																		authentication. Max: 50byte
+															<ClientID>	string parameter, Client ID connected to the broker.
+																		Max: 50byte
+															<AliveTime>	keep-alive time setting with the broker within the
+																		range of 30s~300s.
 												Response:	OK
 										*/
-	WIZFI360_CMD_ID_MQTTTOPIC,				/*!< 	TODO: comment
-												Usage:
+	WIZFI360_CMD_ID_MQTTTOPIC,			/*!<	Sets the Topic of Publish and Subscribe.
+												Usage:		AT+MQTTTOPIC=<publish topic>,<subscribe topic1>[,<subscribe topic2>][,<subscribe topic3>]
+															<publish topic>: string parameter, The topic published on the WizFi360
+															<subscribe topic1>: string parameter, The topic subscribed by the WizFi360
+															[<subscribe topic2>]: string parameter, The topic subscribed by the WizFi360
+															[<subscribe topic3>]: string parameter, The topic subscribed by the WizFi360
 												Response:	OK
 										*/
-	WIZFI360_CMD_ID_MQTTCON,				/*!< 	TODO: comment
-												Usage:
+	WIZFI360_CMD_ID_MQTTCON,			/*!< 	Connects to a Broker
+												Usage:		AT+MQTTCON=<enable>,<broker IP>,<broker port>
+															<enable>:
+																• 0: Connect to a broker without authentication
+																• 1: Connect to a broker with authentication
+															<broker IP>: string parameter indicating the broker IP address
+															<broker port>: the broker port number
 												Response:	OK
 										*/
 } WIZFI360_CommandIdTypeDef;
 
 
 /**
-  * @brief  WIZFI360 handle Structure definition
+  * @brief  WIZFI360 handle structure definition
   */
 typedef struct __WIZFI360_HandlerTypedef
 {
@@ -234,24 +267,38 @@ typedef struct __WIZFI360_HandlerTypedef
 															 be sent, while response is expected.
 															 	 0: response is not expected
 															 	 1: response is expected */
-	char CommandBuffer[WIZFI360_MAX_CMD_LEN];			/*!< TODO: COMMENT */
-	uint8_t CommandLength;								/*!< TODO: COMMENT */
-	WIZFI360_CommandIdTypeDef CommandId;				/*!< TODO: COMMENT */
-	uint8_t TagCharsReceived[WIZFI360_NUM_TAGS];		/*!< TODO: COMMENT */
-	uint8_t EchoCharsReceived;							/*!< TODO: COMMENT */
+	char CommandBuffer[WIZFI360_MAX_CMD_LEN];			/*!< String buffer holds the ongoing/last AT command to be transmitted via UART */
+	uint8_t CommandLength;								/*!< The length of the AT command in CommandBuffer */
+	WIZFI360_CommandIdTypeDef CommandId;				/*!< Identifies the ongoing/last AT command */
+	uint8_t TagCharsReceived[WIZFI360_NUM_TAGS];		/*!< The amount of consecutive tag characters found in UART receive buffer. */
+	uint8_t EchoCharsReceived;							/*!< The amount of consecutive echo characters found in UART receive buffer. */
 } WIZFI360_HandlerTypedef;
 
+/*********************************************************************************************/
 
+/* Public function prototypes  ---------------------------------------------------------*/
 
 void WIZFI360_Initialize();
+
 void WIZFI360_Process();
+
 WIZFI360_State WIZFI360_GetState();
+
 void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* password);
+
 void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode);
+
 void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
+
 void WIZFI360_MqqtInit(const char* userName, const char*  pwd,
 		const char* clientId, uint16_t aliveTime );
-void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic);
-void WIZFI360_MqqtConnectToBroker(uint8_t enable, const char*  mqttBrokerIP, uint16_t mqttBrokerPort);
+
+void WIZFI360_MqqtSetTopic(const char* pubTopic, const char*  subTopic1,
+		const char* subTopic2, const char* subTopic3);
+
+void WIZFI360_MqqtConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
+		uint16_t mqttBrokerPort);
+
+/*********************************************************************************************/
 
 #endif /* INC_WIZFI360_H_ */

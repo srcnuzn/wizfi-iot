@@ -16,8 +16,11 @@
 
 /*********************************************************************************************/
 
+/* Private constants ----------------------------------------------------------*/
+
 /**
- *	TODO: Comment
+ *	A string table holding tags which can be received from wizfi360 module via UART.
+ *	Each tag entry is assigned to it's tag identifier.
  */
 static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 	[WIZFI360_TAG_ID_ERROR] = WIZFI360_TAG_ERROR,
@@ -40,7 +43,9 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 	[WIZFI360_TAG_ID_FAIL] = WIZFI360_TAG_FAIL
 };
 
-/* Includes ------------------------------------------------------------------*/
+/*********************************************************************************************/
+
+/* Private function prototypes -----------------------------------------------*/
 
 static void ScanUartReceiveBuffer(uint32_t bytesToScan);
 static void ScanBufferForTags(uint8_t tmpChar, int i);
@@ -51,13 +56,17 @@ static void ErrorHandler();
 
 /*********************************************************************************************/
 
+/* Private variables ---------------------------------------------------------*/
+
 /*
- * A global wizfi360 handler
+ * The wizfi360 handler
  */
 static WIZFI360_HandlerTypedef wizfi360;
 
 
 /*********************************************************************************************/
+
+/* Public functions ---------------------------------------------------------*/
 
 /**
   * @brief  Initializes the WizFi360 module
@@ -68,6 +77,7 @@ void WIZFI360_Initialize()
 {
 	WIZFI360_UART_Initialize();
 
+	// TODO: DO PROPER RESET
 	wizfi360.EchoEnabled = 1;
 	wizfi360.ExpectingResponse = 0;
 	wizfi360.Mode = WIZFI360_MODE_STATION;
@@ -77,16 +87,16 @@ void WIZFI360_Initialize()
   * @brief  Checks for new data received from WizFi360 module and handles received data.
   * @note   This function must be called continuously as background task in the main application.
   * @note   The underlying UART ring-buffer overflows, if data is not handled fast enough.
-  * @note   The underlying UART ring-buffer overflows, if data is not handled fast enough.
   * @retval none
   */
 void WIZFI360_Process()
 {
 	// TODO: CHECK FOR TIMEOUTS
 
-	// If no UART data from wizfi is available...
+	// The amount of received bytes.
 	uint32_t bytesAvailable = WIZFI360_UART_DataAvailable();
 
+	// If no UART data is available...
 	if (!bytesAvailable)
 	{
 		// Do nothing.
@@ -96,16 +106,21 @@ void WIZFI360_Process()
 	ScanUartReceiveBuffer(bytesAvailable);
 }
 
+
 /**
- *	TODO: Comment
+ * @brief	Returns the state of the module.
+ * @retval	The modules state
  */
 WIZFI360_State WIZFI360_GetState()
 {
+	// If we are expecting a response (from AT command)
 	if (wizfi360.ExpectingResponse)
 	{
+		// The module is busy processing the AT command.
 		return WIZFI360_STATE_BUSY;
 	}
 
+	// The module is ready
 	return WIZFI360_STATE_READY;
 }
 
@@ -270,7 +285,8 @@ void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode)
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -383,7 +399,8 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -398,6 +415,7 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 
 
 /**
+ * TODO: Check aliveTime range
  * @brief	Sets the Configuration of MQTT connection.
  * @note	This command should be set before connecting to a broker.
  * @note	There must be no ongoing AT command.
@@ -459,7 +477,7 @@ void WIZFI360_MqqtInit(const char* userName, const char*  pwd,
 
 
 
-	// The length of the command (example: AT+CWJAP_CUR="ssid","pwd"<CR><LF>)
+	// The length of the command (example: AT+MQTTSET="user","password","id",30<CR><LF>)
 	const int cmdLength =
 		strlen("AT+MQTTSET=")
 		+ 6						// username, password and clientId are wrapped in quotation marks
@@ -519,17 +537,18 @@ void WIZFI360_MqqtInit(const char* userName, const char*  pwd,
 
 
 /**
- * TODO: comment
+ * TODO: Add subscribe topic parameter to list of strings
+ * TODO: NULL check
+ * TODO: (strlen < 1) check
  * @brief	Sets the Topic of Publish and Subscribe
  * @note	This command should be set before connecting to a broker.
  * @note	There must be no ongoing AT command.
- * @param	userName   	string parameter, User Name used in the broker authentication Max: 50byte
- * @param	pwd     	string parameter, Password used in the broker authentication. Max: 50byte
- * @param	ClientID    string parameter, Client ID connected to the broker. Max: 50byte
- * @param	aliveTime   keep-alive time setting with the broker within the range of 30s~300s.
+ * @param	pubTopic	string parameter, The topic published on the WizFi360
+ * @param	subscribeTopic 	string parameter, The topic subscribed by the WizFi360
  * @retval	None
  */
-void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic)
+void WIZFI360_MqqtSetTopic(const char* pubTopic, const char*  subTopic1,
+		const char* subTopic2, const char* subTopic3)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
@@ -544,14 +563,14 @@ void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic
 		ErrorHandler();
 	}
 
-	// TODO: comments
-	// The length of the command (example: AT+CWJAP_CUR="ssid","pwd"<CR><LF>)
+	// The length of the command (example: AT+MQTTTOPIC="pubTopic","subTopic1","SubTopic2","SubTopic3"<CR><LF>)
 	const int cmdLength =
 		strlen("AT+MQTTTOPIC=")
-		+ 4						// username, password and clientId are wrapped in quotation marks
-		+ 1						// and are separated by this amount of commas
-		+ strlen(publishTopic)
-		+ strlen(subscribeTopic)
+		+ 2						// publishTopic is wrapped in quotation marks
+		+ 2						// each subscribeTopic is wrapped in quotation marks
+		+ 1						// topics are separated by this amount of commas
+		+ strlen(pubTopic)
+		+ strlen(subTopic1)
 		+ 2;					// command ends with <CR><LF>
 
 	// If the command is too long...
@@ -573,16 +592,17 @@ void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic
 	// Build the command
 	strcat(wizfi360.CommandBuffer, "AT+MQTTTOPIC=");
 	strcat(wizfi360.CommandBuffer, "\"");
-	strcat(wizfi360.CommandBuffer, publishTopic);
+	strcat(wizfi360.CommandBuffer, pubTopic);
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, ",");
 	strcat(wizfi360.CommandBuffer, "\"");
-	strcat(wizfi360.CommandBuffer, subscribeTopic);
+	strcat(wizfi360.CommandBuffer, subTopic1);
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -597,15 +617,16 @@ void WIZFI360_MqqtSetTopic(const char* publishTopic, const char*  subscribeTopic
 
 
 /**
- * TODO: comment
- * @brief	: Connects to a Broker
+ * @brief	Connects to a Broker
  * @note	There must be no ongoing AT command.
- * @param	enable			Decides, whether to connect to a broker with/without authentication
- * @param	mqttBrokerIP	string parameter, Password used in the broker authentication. Max: 50byte
+ * @note	Whenever messages of subscribe topic is received, it will return as below:
+ * 			<subscribe topic> -> "subscribe data"
+ * @param	authMode		Decides, whether to connect to a broker with/without authentication
+ * @param	mqttBrokerIP	string parameter indicating the broker IP address
  * @param	mqttBrokerPort 	the broker port number
  * @retval	None
  */
-void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef enable,
+void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
 		const char*  mqttBrokerIP, uint16_t mqttBrokerPort)
 {
 	// If there is an ongoing AT command...
@@ -625,13 +646,12 @@ void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef enable,
 	char sPort[6] = {0};
 	sprintf(sPort, "%d", mqttBrokerPort);
 
-	// TODO: comments
 	// The length of the command (example: AT+MQTTCON=0,"35.156.215.0",1883<CR><LF>)
 	const int cmdLength =
 		strlen("AT+MQTTCON=")
-		+ 2						// username, password and clientId are wrapped in quotation marks
-		+ 2						// and are separated by this amount of commas
-		+ 1						// enable is 0 or 1
+		+ 2						// IP address is wrapped in quotation marks
+		+ 2						// the parameters are separated by this amount of commas
+		+ 1						// authMode is one character long ('0' or '1')
 		+ strlen(sPort)
 		+ strlen(mqttBrokerIP)
 		+ 2;					// command ends with <CR><LF>
@@ -655,7 +675,7 @@ void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef enable,
 	// Build the command
 	strcat(wizfi360.CommandBuffer, "AT+MQTTCON=");
 
-	switch (enable)
+	switch (authMode)
 	{
 		case WIZFI360_MQQT_AUTH_DISABLE:
 		{
@@ -697,6 +717,8 @@ void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef enable,
 
 /*********************************************************************************************/
 
+/* Private functions ---------------------------------------------------------*/
+
 /**
   * @brief  Scans the received data for certain tags and strings.
   * @retval none
@@ -720,8 +742,13 @@ static void ScanUartReceiveBuffer(uint32_t bytesToScan)
 	}
 }
 
+
 /**
- *	TODO: Comment
+ * @brief	Checks if the UART receive buffer contains an echo to be handled.
+ * @note	When sending AT commands, the modules sends back the command, if echo mode is not disabled.
+ * @param	tmpChar	The character in UART receive buffer, that is being checked.
+ * @param	i		The index in UART receive buffer that is being checked.
+ * @retval	None
  */
 static void ScanBufferForEcho(uint8_t tmpChar, int i)
 {
@@ -766,7 +793,12 @@ static void ScanBufferForEcho(uint8_t tmpChar, int i)
 }
 
 /**
- *	TODO: Comment
+ * @brief	Checks if the UART receive buffer contains a tag to be handled.
+ * @note	Tags can be received as response to an AT command.
+ * @note	Tags can be received as event.
+ * @param	tmpChar	The character in UART receive buffer, that is being checked.
+ * @param	i		The index in UART receive buffer that is being checked.
+ * @retval	None
  */
 static void ScanBufferForTags(uint8_t tmpChar, int i)
 {
@@ -806,8 +838,14 @@ static void ScanBufferForTags(uint8_t tmpChar, int i)
 
 /*********************************************************************************************/
 
+
 /**
- *	TODO: Comment
+ * @brief	Handles the received tag.
+ * @note	Tags can be received as response to an AT command.
+ * @note	Tags can be received as event.
+ * @param	tagId	The tag, that was received.
+ * @param	length	Amount of bytes in UART receive buffer (including the full tag)
+ * @retval	None
  */
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 {
@@ -897,8 +935,11 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 
 /*********************************************************************************************/
 
+
 /**
- *	TODO: Comment
+ * @brief	Handles errors.
+ * @note	Useful for debugging purposes.
+ * @retval	None
  */
 static void ErrorHandler()
 {

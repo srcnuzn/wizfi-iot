@@ -97,7 +97,7 @@ static void MqqtStatemachineProcess()
 		}
 		case 8:
 		{
-			WIZFI360_MqqtSetTopic("blabla", "hahaha");
+			WIZFI360_MqqtSetTopic("blabla", "hahaha", NULL, NULL);
 			currentState++;
 			break;
 		}
