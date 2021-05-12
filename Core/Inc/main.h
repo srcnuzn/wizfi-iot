@@ -40,6 +40,7 @@ extern "C" {
 extern TIM_HandleTypeDef htim2;
 extern UART_HandleTypeDef huart2;
 extern DMA_HandleTypeDef hdma_usart2_rx;
+extern ADC_HandleTypeDef hadc1;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
