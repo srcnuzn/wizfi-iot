@@ -43,6 +43,8 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 	[WIZFI360_TAG_ID_FAIL] = WIZFI360_TAG_FAIL
 };
 
+// TODO Create MQTT subscribe_topic list
+
 /*********************************************************************************************/
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,6 +54,9 @@ static void ScanBufferForTags(uint8_t tmpChar, int i);
 static void ScanBufferForEcho(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
 static void ErrorHandler();
+
+// TODO Scan Buffer for MQTT topics
+// TODO Create MQTT Message Receive callback
 
 
 /*********************************************************************************************/
@@ -715,8 +720,78 @@ void WIZFI360_MqqtConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
 	}
 }
 
-/*********************************************************************************************/
+/**
+ * @brief	Connects to a Broker TODO COMMENT
+ * @note	There must be no ongoing AT command.
+ * @note	Whenever messages of subscribe topic is received, it will return as below:
+ * 			<subscribe topic> -> "subscribe data"
+ * @param	authMode		Decides, whether to connect to a broker with/without authentication
+ * @param	mqttBrokerIP	string parameter indicating the broker IP address
+ * @param	mqttBrokerPort 	the broker port number
+ * @retval	None
+ */
+void WIZFI360_MqqtPublishMessage(const char* message)
+{
+	// If there is an ongoing AT command...
+	if (wizfi360.ExpectingResponse)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+	// TODO if is not connected to broker
+	// If the module is not in station mode...
+	if (wizfi360.Mode != WIZFI360_MODE_STATION)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
 
+
+	// The length of the command (example: AT+MQTTCON=0,"35.156.215.0",1883<CR><LF>)
+	const int cmdLength =
+		strlen("AT+MQTTPUB=")
+		+ 2						// the message is wrapped in quotation marks
+		+ strlen(message)
+		+ 2;					// command ends with <CR><LF>
+
+	// If the command is too long...
+	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Write the command id into wizfi360 structure
+	wizfi360.CommandId = WIZFI360_CMD_ID_MQTTPUB;
+
+	// Write the command length into wizfi360 structure
+	wizfi360.CommandLength = cmdLength;
+
+	// Empty the command buffer string
+	wizfi360.CommandBuffer[0] = '\0';
+
+	// Build the command
+	strcat(wizfi360.CommandBuffer, "AT+MQTTPUB=");
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, message);
+	strcat(wizfi360.CommandBuffer, "\"");
+	strcat(wizfi360.CommandBuffer, "\r\n");
+
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+
+	// We expect a response for this command.
+	wizfi360.ExpectingResponse = 1;
+
+	// If echo mode is enabled...
+	if (wizfi360.EchoEnabled)
+	{
+		// We expect an echo for this command
+		wizfi360.ExpectingEcho = 1;
+	}
+}
+
+/*********************************************************************************************/
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -855,6 +930,7 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 	switch(tagId)
 	{
 		// If we received the OK tag...
+		// TODO: handle tags received
 		case WIZFI360_TAG_ID_OK:
 		{
 			wizfi360.ExpectingResponse = 0;
