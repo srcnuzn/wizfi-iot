@@ -245,6 +245,7 @@ typedef enum
 															<broker port>: the broker port number
 												Response:	OK
 										*/
+	WIZFI360_CMD_ID_MQTTPUB,			/*!< 	TODO COMMENT */
 } WIZFI360_CommandIdTypeDef;
 
 
@@ -298,6 +299,8 @@ void WIZFI360_MqqtSetTopic(const char* pubTopic, const char*  subTopic1,
 
 void WIZFI360_MqqtConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
 		uint16_t mqttBrokerPort);
+
+void WIZFI360_MqqtPublishMessage(const char* message);
 
 /*********************************************************************************************/
 
