@@ -160,6 +160,21 @@ typedef enum
 	WIZFI360_STATE_UNKNOWN,				/*!< The modules state is unknown. */
 } WIZFI360_State;
 
+typedef enum
+{
+	WIZFI360_RESPONSE_OK,
+	WIZFI360_RESPONSE_ERROR
+} WIZFI360_ResponseTypeDef;
+
+/**
+  * @brief WIZFI360 mode definition
+  */
+typedef enum
+{
+	WIZFI360_WIFI_DISCONNECTED,				/*!< Wifi is not connected. */
+	WIZFI360_WIFI_CONNECTED,				/*!< Wifi is connected.*/
+} WIZFI360_WifiState;
+
 
 /**
   * @brief WIZFI360 DHCP mode definition
@@ -273,6 +288,7 @@ typedef struct __WIZFI360_HandlerTypedef
 	WIZFI360_CommandIdTypeDef CommandId;				/*!< Identifies the ongoing/last AT command */
 	uint8_t TagCharsReceived[WIZFI360_NUM_TAGS];		/*!< The amount of consecutive tag characters found in UART receive buffer. */
 	uint8_t EchoCharsReceived;							/*!< The amount of consecutive echo characters found in UART receive buffer. */
+	uint8_t WifiState;									/*!< Indicates, weather the module is connected to an AP or not. */
 } WIZFI360_HandlerTypedef;
 
 /*********************************************************************************************/
@@ -284,6 +300,8 @@ void WIZFI360_Initialize();
 void WIZFI360_Process();
 
 WIZFI360_State WIZFI360_GetState();
+
+WIZFI360_WifiState WIZFI360_GetWifiState();
 
 void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* password);
 
@@ -301,6 +319,13 @@ void WIZFI360_MqqtConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
 		uint16_t mqttBrokerPort);
 
 void WIZFI360_MqqtPublishMessage(const char* message);
+
+void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
+		WIZFI360_ResponseTypeDef response);
+
+void WIZFI360_WifiConnectedCallback();
+
+void WIZFI360_WifiConnectFailedCallback();
 
 /*********************************************************************************************/
 

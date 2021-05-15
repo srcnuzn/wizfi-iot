@@ -57,7 +57,9 @@ static void ErrorHandler();
 
 // TODO Scan Buffer for MQTT topics
 // TODO Create MQTT Message Receive callback
-
+// TODO Disconnect from Broker
+// TODO Test Command
+// TODO Reset Command
 
 /*********************************************************************************************/
 
@@ -86,6 +88,7 @@ void WIZFI360_Initialize()
 	wizfi360.EchoEnabled = 1;
 	wizfi360.ExpectingResponse = 0;
 	wizfi360.Mode = WIZFI360_MODE_STATION;
+	wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
 }
 
 /**
@@ -96,7 +99,7 @@ void WIZFI360_Initialize()
   */
 void WIZFI360_Process()
 {
-	// TODO: CHECK FOR TIMEOUTS
+	// TODO: CHECK FOR TIMEOUTS?
 
 	// The amount of received bytes.
 	uint32_t bytesAvailable = WIZFI360_UART_DataAvailable();
@@ -128,6 +131,12 @@ WIZFI360_State WIZFI360_GetState()
 	// The module is ready
 	return WIZFI360_STATE_READY;
 }
+
+WIZFI360_WifiState WIZFI360_GetWifiState()
+{
+	return wizfi360.WifiState;
+}
+
 
 /**
  * @brief	Connects to an AP.
@@ -542,9 +551,9 @@ void WIZFI360_MqqtInit(const char* userName, const char*  pwd,
 
 
 /**
- * TODO: Add subscribe topic parameter to list of strings
  * TODO: NULL check
  * TODO: (strlen < 1) check
+ * TODO: Comment subTopic2 / subtopic3
  * @brief	Sets the Topic of Publish and Subscribe
  * @note	This command should be set before connecting to a broker.
  * @note	There must be no ongoing AT command.
@@ -934,6 +943,8 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		case WIZFI360_TAG_ID_OK:
 		{
 			wizfi360.ExpectingResponse = 0;
+			WIZFI360_CommandCpltCallback(wizfi360.CommandId,
+					WIZFI360_RESPONSE_OK);
 			ErrorHandler();
 			break;
 		}
@@ -945,8 +956,10 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_ERROR:
 		{
-			ErrorHandler();
 			wizfi360.ExpectingResponse = 0;
+			WIZFI360_CommandCpltCallback(wizfi360.CommandId,
+					WIZFI360_RESPONSE_ERROR);
+			ErrorHandler();
 			break;
 		}
 		case WIZFI360_TAG_ID_ALREADY_CONNECTED:
@@ -963,7 +976,8 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_FAIL:
 		{
-			ErrorHandler();
+			WIZFI360_WifiConnectFailedCallback();
+
 			if (wizfi360.CommandId == WIZFI360_CMD_ID_CWJAP_CUR &&
 					wizfi360.ExpectingResponse)
 			{
@@ -978,7 +992,7 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_WIFI_CONNECTED:
 		{
-			ErrorHandler();
+			wizfi360.WifiState = WIZFI360_WIFI_CONNECTED;
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_GOT_IP:
@@ -988,7 +1002,7 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_WIFI_DISCONNECT:
 		{
-			ErrorHandler();
+			wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
 			break;
 		}
 		case WIZFI360_TAG_ID_BUSY_SENDING:
@@ -1023,3 +1037,27 @@ static void ErrorHandler()
 }
 
 /*********************************************************************************************/
+
+/**
+  * @brief Response OK received
+  * @retval None
+  */
+__weak void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
+		WIZFI360_ResponseTypeDef response)
+{
+
+  /* NOTE : This function should not be modified, when the callback is needed,
+            the WIZFI360_CommandCpltCallback can be implemented in the user file.
+   */
+}
+
+__weak void WIZFI360_WifiConnectedCallback()
+{
+
+}
+
+__weak void WIZFI360_WifiConnectFailedCallback()
+{
+
+}
+

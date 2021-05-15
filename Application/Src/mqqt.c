@@ -5,180 +5,182 @@
  *      Author: serca
  */
 
-
 #include "mqqt.h"
 #include "wizfi360.h"
 #include "mqtt_user.h"
+#include "MqttClientStatemachine.h"
+#include "sc_timer_service.h"
+#include "stdio.h"
 
+#define MAX_TIMERS 4
 
-__IO uint16_t lightSensorValue_12b;
+#define SAMPLE_TIME		 100
+#define PUBLISH_TIME	1000
 
-static void MqqtStatemachineProcess();
+#define BROKER_ADDRESS	"broker.hivemq.com"
+#define BROKER_PORT		1883
+
+//! We allocate the desired array of timers.
+static sc_timer_t timers[MAX_TIMERS];
+
+char message[32] = { 0 };
+
+//! The timers are managed by a timer service. */
+static sc_timer_service_t timer_service;
+
+static uint32_t current_time = 0;
+static uint32_t last_time = 0;
+static uint32_t elapsed_time = 0;
+
+static uint16_t lightSensorValue_12b;
+static void ReadSensor();
+
+/*
+ * The statemachine handler
+ */
+static MqttClientStatemachine sm;
+
+static void mqttClientStatemachine_react_to_events();
+static void mqttClientStatemachine_write_inputs();
 
 void Mqqt_Initialize()
 {
 	WIZFI360_Initialize();
-	HAL_Delay(1000);
 
 	/*##-3- Calibrate ADC then Start the conversion process ####################*/
-	if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) !=  HAL_OK)
+	if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
 	{
 		/* ADC Calibration Error */
 	}
-}
 
+	/*! Initializes the timer service */
+	sc_timer_service_init(&timer_service, timers, MAX_TIMERS,
+	        (sc_raise_time_event_fp) &mqttClientStatemachine_raise_time_event);
+
+	mqttClientStatemachine_init(&sm);
+
+	mqttClientStatemachine_set_dT(&sm, SAMPLE_TIME);
+
+	mqttClientStatemachine_set_publishInterval(&sm, PUBLISH_TIME);
+
+	mqttClientStatemachine_enter(&sm);
+
+	last_time = HAL_GetTick();
+}
 
 void Mqqt_Process()
 {
-	WIZFI360_Process();
-	MqqtStatemachineProcess();
-}
+	current_time = HAL_GetTick();
+	elapsed_time = current_time - last_time;
 
-
-static void MqqtStatemachineProcess()
-{
-	static uint8_t currentState = 0;
-	static uint32_t tick_ms = 0;
-
-	// TODO Reset of wifi module
-	// TODO disable echo
-	// TODO yakindu state machine
-	switch (currentState)
+	if (elapsed_time >= SAMPLE_TIME)
 	{
-		case 0:
-		{
-			WIZFI360_ConfigureMode(WIZFI360_MODE_STATION);
-			currentState++;
-			break;
-		}
-		case 1:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-			}
-			break;
-		}
-		case 2:
-		{
-			WIZFI360_ConfigureDhcp(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
-			currentState++;
-			break;
-		}
-		case 3:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-			}
-			break;
-		}
-		case 4:
-		{
-			WIZFI360_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);
-			currentState++;
-			break;
-		}
-		case 5:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-			}
-			break;
-		}
-		case 6:
-		{
-			WIZFI360_MqqtInit(MQQT_USERNAME, MQQT_PASSWORD,
-					MQQT_CLIENT_ID, MQQT_ALIVE_TIME);
+		ReadSensor();
 
-			currentState++;
-			break;
-		}
-		case 7:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-			}
-			break;
-		}
-		case 8:
-		{
-			// TODO defines für cases von no. of topics
-			WIZFI360_MqqtSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
-			currentState++;
-			break;
-		}
-		case 9:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-			}
-			break;
-		}
-		case 10:
-		{
-			WIZFI360_MqqtConnectToBroker(WIZFI360_MQQT_AUTH_DISABLE,
-					"broker.hivemq.com", 1883);
-			currentState++;
-			break;
-		}
-		case 11:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-			}
-			break;
-		}
-		case 12:
-		{
+		WIZFI360_Process();
 
-			if (HAL_ADC_Start(&hadc1) != HAL_OK)
-			{
-				/* Start Conversation Error */
-				__NOP();
-			}
-			if (HAL_ADC_PollForConversion(&hadc1, 10) != HAL_OK)
-			{
-				/* End Of Conversion flag not set on time */
-				__NOP();
-			}
+		/*! push the timer service clock forward */
+		sc_timer_service_proceed(&timer_service, elapsed_time);
 
-			/* Check if the continous conversion of regular channel is finished */
-			if ((HAL_ADC_GetState(&hadc1) & HAL_ADC_STATE_REG_EOC) == HAL_ADC_STATE_REG_EOC)
-			{
-				/*##-5- Get the converted value of regular channel  ########################*/
-				lightSensorValue_12b = HAL_ADC_GetValue(&hadc1);
-			}
+		mqttClientStatemachine_write_inputs();
 
-			char message[32] = {0};
-			sprintf(message, "%d", lightSensorValue_12b);
+		mqttClientStatemachine_run_cycle(&sm);
 
-			// TODO try to send JSON format (find library)
-			WIZFI360_MqqtPublishMessage(message);
+		mqttClientStatemachine_react_to_events();
 
-			currentState++;
-			break;
-		}
-		case 13:
-		{
-			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
-			{
-				currentState++;
-				tick_ms = HAL_GetTick();
-			}
-			break;
-		}
-		case 14:
-		{
-			if(HAL_GetTick() - tick_ms >= 1000)
-			{
-				currentState = 12;
-			}
-			break;
-		}
+		last_time = current_time;
 	}
 }
+
+static void mqttClientStatemachine_write_inputs()
+{
+	if (WIZFI360_GetWifiState() == WIZFI360_WIFI_CONNECTED)
+	{
+		mqttClientStatemachine_WizFi360_set_wifiConnected(&sm, bool_true);
+	}
+	else
+	{
+		mqttClientStatemachine_WizFi360_set_wifiConnected(&sm, bool_false);
+	}
+}
+
+static void mqttClientStatemachine_react_to_events()
+{
+	if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
+		WIZFI360_ConfigureMode(WIZFI360_MODE_STATION);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_configureDhcp(&sm))
+		WIZFI360_ConfigureDhcp(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPoint(&sm))
+		WIZFI360_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_configureMqtt(&sm))
+		WIZFI360_MqqtInit(MQQT_USERNAME, MQQT_PASSWORD,
+				MQQT_CLIENT_ID, MQQT_ALIVE_TIME);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
+		WIZFI360_MqqtSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
+		WIZFI360_MqqtConnectToBroker(WIZFI360_MQQT_AUTH_DISABLE,
+		        BROKER_ADDRESS, BROKER_PORT);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_publishTopic(&sm))
+		WIZFI360_MqqtPublishMessage(message);
+
+	if (mqttClientStatemachine_WizFi360_is_raised_disconnectFromBroker(&sm))
+		//TODO: Call Disconnect Command
+		#warning("no disconnect command available");
+		;
+}
+
+void mqttClientStatemachine_set_timer(MqttClientStatemachine *handle,
+        const sc_eventid evid, const sc_integer time_ms,
+        const sc_boolean periodic)
+{
+	sc_timer_set(&timer_service, handle, evid, time_ms, periodic);
+}
+
+void mqttClientStatemachine_unset_timer(MqttClientStatemachine *handle,
+        const sc_eventid evid)
+{
+	sc_timer_unset(&timer_service, evid);
+}
+
+void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
+        WIZFI360_ResponseTypeDef response)
+{
+	if (response == WIZFI360_RESPONSE_OK)
+	{
+		mqttClientStatemachine_WizFi360_raise_ok(&sm);
+	}
+	else
+	{
+		mqttClientStatemachine_WizFi360_raise_error(&sm);
+	}
+}
+
+void WIZFI360_WifiConnectFailedCallback()
+{
+	mqttClientStatemachine_WizFi360_raise_fail(&sm);
+}
+
+static void ReadSensor()
+{
+	HAL_ADC_Start(&hadc1);
+
+	HAL_ADC_PollForConversion(&hadc1, 100);
+
+	/* Check if the continous conversion of regular channel is finished */
+	if ((HAL_ADC_GetState(&hadc1) & HAL_ADC_STATE_REG_EOC)
+	        == HAL_ADC_STATE_REG_EOC)
+	{
+		/*##-5- Get the converted value of regular channel  ########################*/
+		lightSensorValue_12b = HAL_ADC_GetValue(&hadc1);
+	}
+
+	// TODO try to send JSON format (find library)
+	sprintf(message, "%d", lightSensorValue_12b);
+}
+

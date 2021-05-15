@@ -25,9 +25,6 @@
  * and the indicies of the buffer.
  * Must be able to fit \c RING_BUFFER_SIZE .
  */
-/*
- * TODO: CHECK DATATYPE (uint8_t too small?)
- */
 typedef uint32_t ring_buffer_size_t;
 
 /**
