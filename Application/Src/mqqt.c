@@ -89,9 +89,8 @@ static void MqqtStatemachineProcess()
 		}
 		case 6:
 		{
-			WIZFI360_MqqtInit(MQQT_USERNAME, MQQT_PASSWORD,
-					MQQT_CLIENT_ID, MQQT_ALIVE_TIME);
-
+			// TODO before getting the SSL certificate, it must be set through AT+CASEND=1 and then sending from host pc over UART
+			WIZFI360_GetSSLCertificate();
 			currentState++;
 			break;
 		}
@@ -105,8 +104,9 @@ static void MqqtStatemachineProcess()
 		}
 		case 8:
 		{
-			// TODO defines für cases von no. of topics
-			WIZFI360_MqqtSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
+			WIZFI360_MqqtInit(MQQT_USERNAME, MQQT_PASSWORD,
+					MQQT_CLIENT_ID, MQQT_ALIVE_TIME);
+
 			currentState++;
 			break;
 		}
@@ -120,8 +120,8 @@ static void MqqtStatemachineProcess()
 		}
 		case 10:
 		{
-			WIZFI360_MqqtConnectToBroker(WIZFI360_MQQT_AUTH_DISABLE,
-					"broker.hivemq.com", 1883);
+			// TODO defines für cases von no. of topics
+			WIZFI360_MqqtSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
 			currentState++;
 			break;
 		}
@@ -134,6 +134,21 @@ static void MqqtStatemachineProcess()
 			break;
 		}
 		case 12:
+		{
+			WIZFI360_MqqtConnectToBroker(WIZFI360_MQQT_AUTH_ENABLE,
+					MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
+			currentState++;
+			break;
+		}
+		case 13:
+		{
+			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
+			{
+				currentState++;
+			}
+			break;
+		}
+		case 14:
 		{
 
 			if (HAL_ADC_Start(&hadc1) != HAL_OK)
@@ -163,7 +178,7 @@ static void MqqtStatemachineProcess()
 			currentState++;
 			break;
 		}
-		case 13:
+		case 15:
 		{
 			if (WIZFI360_GetState() == WIZFI360_STATE_READY)
 			{
@@ -172,11 +187,11 @@ static void MqqtStatemachineProcess()
 			}
 			break;
 		}
-		case 14:
+		case 16:
 		{
 			if(HAL_GetTick() - tick_ms >= 1000)
 			{
-				currentState = 12;
+				currentState = 14;
 			}
 			break;
 		}

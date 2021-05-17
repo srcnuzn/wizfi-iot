@@ -420,6 +420,126 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 
 
 /**
+ * @brief	Gets the SSL certificate of the WizFi module.
+ * @note	There must be no ongoing AT command.
+ * @param	None
+ * @retval	None
+ */
+void WIZFI360_SetSSLCertificate()
+{
+	// If there is an ongoing AT command...
+	if (wizfi360.ExpectingResponse)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// TODO Finish setting SSL cert function
+
+	// The length of the command
+	const int cmdLength =
+		strlen("AT+CASEND=")
+		+1							// mode 0: delete cert, 1: generate cert
+		//+ strlen(CLIENT_SSL_CERT)		// length of certificate
+		+ 6;						// command ends with <CR><LF>
+
+	// If the command is too long...
+	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Write the command id into wizfi360 structure
+	wizfi360.CommandId = WIZFI360_CMD_ID_CASEND_SET;
+
+	// Write the command length into wizfi360 structure
+	wizfi360.CommandLength = cmdLength;
+
+	// Empty the command buffer string
+	wizfi360.CommandBuffer[0] = '\0';
+
+	// Build the command
+	strcat(wizfi360.CommandBuffer, "AT+CASEND?");
+
+	// Append <CR><LF>
+	strcat(wizfi360.CommandBuffer, "\r\n");
+
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
+
+	// We expect a response for this command.
+	wizfi360.ExpectingResponse = 1;
+
+	// If echo mode is enabled...
+	if (wizfi360.EchoEnabled)
+	{
+		// We expect an echo for this command
+		wizfi360.ExpectingEcho = 1;
+	}
+}
+
+
+/**
+ * @brief	Gets the SSL certificate of the WizFi module.
+ * @note	There must be no ongoing AT command.
+ * @param	None
+ * @retval	None
+ */
+void WIZFI360_GetSSLCertificate()
+{
+	// If there is an ongoing AT command...
+	if (wizfi360.ExpectingResponse)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// The length of the command
+	const int cmdLength =
+		strlen("AT+CASEND?")
+		+ 2;						// command ends with <CR><LF>
+
+	// If the command is too long...
+	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
+	{
+		// TODO: Error handling
+		ErrorHandler();
+	}
+
+	// Write the command id into wizfi360 structure
+	wizfi360.CommandId = WIZFI360_CMD_ID_CASEND_GET;
+
+	// Write the command length into wizfi360 structure
+	wizfi360.CommandLength = cmdLength;
+
+	// Empty the command buffer string
+	wizfi360.CommandBuffer[0] = '\0';
+
+	// Build the command
+	strcat(wizfi360.CommandBuffer, "AT+CASEND?");
+
+	// Append <CR><LF>
+	strcat(wizfi360.CommandBuffer, "\r\n");
+
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
+
+	// We expect a response for this command.
+	wizfi360.ExpectingResponse = 1;
+
+	// If echo mode is enabled...
+	if (wizfi360.EchoEnabled)
+	{
+		// We expect an echo for this command
+		wizfi360.ExpectingEcho = 1;
+	}
+}
+
+
+/**
  * TODO: Check aliveTime range
  * @brief	Sets the Configuration of MQTT connection.
  * @note	This command should be set before connecting to a broker.
