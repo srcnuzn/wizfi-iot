@@ -232,6 +232,16 @@ typedef enum
 																	1: Enables DHCP
 												Response:	OK
 										*/
+	WIZFI360_CMD_ID_CASEND_GET,			/*!< 	Get the SSL certificate
+													Usage:		AT+CASEND?
+													Response:	Certificate or ERROR
+										*/
+	WIZFI360_CMD_ID_CASEND_SET,			/*!< 	Set the SSL certificate
+													Usage:		AT+CASEND=<mode>
+																<mode>	0: Delete a certificate
+																		1: Generate a certificate
+													Response:	>, then put in cert, then OK
+										*/
 	WIZFI360_CMD_ID_MQTTSET,			/*!<	Sets the Configuration of MQTT connection.
 												Usage:		AT+MQTTSET=<User Name>,<Password>,<ClientID>,<AliveTime>
 															<User Name> string parameter, User Name used in the broker
@@ -309,6 +319,10 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* password);
 void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode);
 
 void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
+
+void WIZFI360_GetSSLCertificate();
+
+void WIZFI360_SetSSLCertificate();
 
 void WIZFI360_MqttInit(const char* userName, const char*  pwd,
 		const char* clientId, uint16_t aliveTime );
