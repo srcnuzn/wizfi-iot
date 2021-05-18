@@ -1,0 +1,4 @@
+<testsuite name="StatechartTest" time="">
+  <testcase name="isStateOnActiveAfterOperateInOffState" classname="platform:/resource/MqttClient/StatechartTest.sctunit#StatechartTest.isStateOnActiveAfterOperateInOffState" time="">
+  </testcase>
+</testsuite>

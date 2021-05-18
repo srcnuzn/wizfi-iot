@@ -1,0 +1,19 @@
+GeneratorModel for yakindu::c {
+
+	statechart MqttClientStatemachine {
+
+		feature Outlet {
+			targetProject = "MqttClientExample"
+			targetFolder = "Application/src-gen"
+			libraryTargetFolder = "Application/src-gen"
+		}
+		
+		feature GeneralFeatures {
+      		timerService = true
+    	}
+    	feature OutEventAPI {
+		    observables = true
+		    getters = true
+		}
+	}
+}
