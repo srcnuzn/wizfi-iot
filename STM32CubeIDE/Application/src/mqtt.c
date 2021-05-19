@@ -16,12 +16,13 @@
 #include "../includes/wizfi360.h"
 #include "../src-gen/MqttClientStatemachine.h"
 #include "../src-gen/sc_timer_service.h"
+#include "../includes/jWrite.h"
 
 /*********************************************************************************************/
 
 /* Private Defines ------------------------------------------------------------------*/
 
-// Maximum amount of times used simultaneously in statemachine
+// Maximum amount of timers used simultaneously in statemachine
 #define MAX_TIMERS 		4
 // Sample time of mqtt process in milliseconds
 #define SAMPLE_TIME	  100
@@ -31,15 +32,13 @@
 /* Private Variables ------------------------------------------------------------------*/
 
 // The message to publish
-// TODO: Max message size
-static char message[32] = { 0 };
+
+#define MAX_PUB_MSG_SIZE	64
+static char message[MAX_PUB_MSG_SIZE] = { 0 };
 
 static uint32_t current_time = 0;
 static uint32_t last_time = 0;
 static uint32_t elapsed_time = 0;
-
-// Todo: Remove sensor from file
-static uint16_t lightSensorValue_12b;
 
 // The statemachine handler
 static MqttClientStatemachine sm;
@@ -57,9 +56,6 @@ static sc_timer_service_t timer_service;
 static void mqttClientStatemachine_react_to_events();
 static void mqttClientStatemachine_write_inputs();
 
-// Todo: Remove sensor from file
-static void ReadSensor();
-
 /*********************************************************************************************/
 
 /* Public functions ---------------------------------------------------------*/
@@ -69,13 +65,10 @@ static void ReadSensor();
   * @note	This function must be called once in application startup.
   * @retval none
   */
-void Mqtt_Initialize()
+void MqttClient_Initialize()
 {
 	// Initialize the underlying wizfi360 module.
 	WIZFI360_Initialize();
-
-	// Initialize Sensor (Todo Remove sensor)
-	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
 	/*! Initializes the timer service */
 	sc_timer_service_init(&timer_service, timers, MAX_TIMERS,
@@ -97,18 +90,15 @@ void Mqtt_Initialize()
   * @note   This function must be called continuously in the main application.
   * @retval none
   */
-void Mqtt_Process()
+void MqttClient_Process()
 {
 	// Get elapsed time
 	current_time = HAL_GetTick();
 	elapsed_time = current_time - last_time;
-
+	
 	// If task is ready...
-	if (elapsed_time >= SAMPLE_TIME)
+	if (current_time - last_time >= SAMPLE_TIME)
 	{
-		// Read the sensor
-		ReadSensor();
-
 		// Execute wizfi360 task
 		WIZFI360_Process();
 
@@ -129,33 +119,34 @@ void Mqtt_Process()
 	}
 }
 
+/**
+  * @brief  Writes an integer entry into the JSON publish buffer to be sent.
+  * @note   This function has no effect when called outside of MqttClient_Publish().
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)
+  * @param	value 		The value of the JSON entry
+  * @retval none
+  */
+void MqttClient_PublishInteger(const char* description, const int value)
+{
+	jwObj_int( (char*) description, value);
+}
+
+/**
+  * @brief  Writes a string entry into the JSON publish buffer to be sent.
+  * @note   This function has no effect when called outside of MqttClient_Publish().
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)
+  * @param	value 		The value of the JSON entry (must be a '\0' terminated string!)
+  * @retval none
+  */
+void MqttClient_PublishString(const char* description, const char* value)
+{
+	jwObj_string( (char*) description, (char*) value);
+}
+
+
 /*********************************************************************************************/
 
 /* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Reads the light sensor and writes value to mqtt publish message
-  * @note   This function should be called before executing the statemachine cycle.
-  * @retval none
-  * TODO: Remove sensor function from this file
-  */
-static void ReadSensor()
-{
-	HAL_ADC_Start(&hadc1);
-
-	HAL_ADC_PollForConversion(&hadc1, 100);
-
-	/* Check if the continous conversion of regular channel is finished */
-	if ((HAL_ADC_GetState(&hadc1) & HAL_ADC_STATE_REG_EOC)
-	        == HAL_ADC_STATE_REG_EOC)
-	{
-		/*##-5- Get the converted value of regular channel  ########################*/
-		lightSensorValue_12b = HAL_ADC_GetValue(&hadc1);
-	}
-
-	// TODO try to send JSON format (find library)
-	sprintf(message, "%d", lightSensorValue_12b);
-}
 
 /**
   * @brief  Writes the inputs of the statemachine.
@@ -206,7 +197,16 @@ static void mqttClientStatemachine_react_to_events()
 		        MQTT_ADDRESS, MQTT_PORT);
 
 	if (mqttClientStatemachine_WizFi360_is_raised_publishTopic(&sm))
+	{
+		jwOpen(message, MAX_PUB_MSG_SIZE, JW_OBJECT, JW_COMPACT);
+
+		// Write the JSON entries (must be implemented by user!)
+		MqttClient_Publish();
+
+		jwEnd();
+
 		WIZFI360_MqttPublishMessage(message);
+	}
 
 	if (mqttClientStatemachine_WizFi360_is_raised_disconnectFromBroker(&sm))
 		//TODO: Call Disconnect Command

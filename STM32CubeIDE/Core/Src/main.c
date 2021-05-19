@@ -42,8 +42,6 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-TIM_HandleTypeDef htim2;
-
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 
@@ -57,13 +55,39 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
+static uint16_t ReadSensor();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+static uint16_t ReadSensor()
+{
+	HAL_ADC_Start(&hadc1);
+
+	HAL_ADC_PollForConversion(&hadc1, 100);
+
+	uint16_t lightSensorValue = 0;
+
+	/* Check if the continous conversion of regular channel is finished */
+	if ((HAL_ADC_GetState(&hadc1) & HAL_ADC_STATE_REG_EOC)
+			== HAL_ADC_STATE_REG_EOC)
+	{
+		/*##-5- Get the converted value of regular channel  ########################*/
+		lightSensorValue = HAL_ADC_GetValue(&hadc1);
+		return lightSensorValue;
+	}
+
+	return 0;
+}
+
+void MqttClient_Publish()
+{
+	MqttClient_PublishInteger("Time", HAL_GetTick());
+	MqttClient_PublishInteger( "Light", ReadSensor());
+	MqttClient_PublishString( "Message", "HelloWorld!");
+}
 
 /* USER CODE END 0 */
 
@@ -98,16 +122,19 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
-  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  Mqtt_Initialize();
+
+  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+
+  MqttClient_Initialize();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	Mqtt_Process();
+	MqttClient_Process();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -238,51 +265,6 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM2_Init(void)
-{
-
-  /* USER CODE BEGIN TIM2_Init 0 */
-
-  /* USER CODE END TIM2_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM2_Init 1 */
-
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
-
-  /* USER CODE END TIM2_Init 2 */
 
 }
 
