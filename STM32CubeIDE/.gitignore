@@ -1,2 +1,4 @@
 /Debug/
 .settings*
+/Application/includes/mqtt_user.h
+/*.launch
