@@ -82,6 +82,8 @@ static WIZFI360_HandlerTypedef wizfi360;
   */
 void WIZFI360_Initialize()
 {
+
+
 	WIZFI360_UART_Initialize();
 
 	// TODO: DO PROPER RESET
@@ -112,6 +114,42 @@ void WIZFI360_Process()
 	}
 
 	ScanUartReceiveBuffer(bytesAvailable);
+}
+
+/**
+ * @brief	Resets the WizFi360 module
+ * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
+ * @retval	None
+ */
+void WIZFI360_Reset()
+{
+	#ifdef WIZFI360_EVB_MINI
+		WIZFI360_ResetHard();
+	#elif WIZFI360_EVB_SHIELD
+		WIZFI360_ResetSoft();
+	#endif
+}
+
+/**
+ * @brief	Resets the WizFi360 module using the Reset Pin
+ * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
+ * @retval	None
+ */
+void WIZFI360_ResetHard()
+{
+	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_SET);
+}
+
+/**
+ * @brief	Resets the WizFi360 module using AT command
+ * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
+ * @retval	None
+ */
+void WIZFI360_ResetSoft()
+{
+
 }
 
 
@@ -1181,3 +1219,7 @@ __weak void WIZFI360_WifiConnectFailedCallback()
 
 }
 
+__weak void WIZFI360_ModuleReadyCallback()
+{
+
+}

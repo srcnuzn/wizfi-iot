@@ -176,6 +176,9 @@ static void mqttClientStatemachine_write_inputs()
   */
 static void mqttClientStatemachine_react_to_events()
 {
+	if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
+		WIZFI360_Reset();
+
 	if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
 		WIZFI360_ConfigureMode(WIZFI360_MODE_STATION);
 
@@ -277,6 +280,16 @@ void WIZFI360_WifiConnectFailedCallback()
 {
 	// Raise the statemachine "fail" event.
 	mqttClientStatemachine_WizFi360_raise_fail(&sm);
+}
+
+/**
+  * @brief	Executes when a wizfi360 module sends notification, that module is ready and listens.
+  * @retval None
+  */
+void WIZFI360_ModuleReadyCallback()
+{
+	// Raise the statemachine "fail" event.
+	mqttClientStatemachine_WizFi360_raise_ready(&sm);
 }
 
 /*********************************************************************************************/

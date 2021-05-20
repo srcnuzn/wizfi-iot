@@ -42,7 +42,7 @@ extern "C" {
 */
 
 /*! Define number of states in the state enum */
-#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 13
+#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 16
 
 /*! Define dimension of the state configuration vector for orthogonal states. */
 #define MQTTCLIENTSTATEMACHINE_MAX_ORTHOGONAL_STATES 1
@@ -63,6 +63,9 @@ extern "C" {
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_CONFIGUREMQTT 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_CONFIGUREDHCP 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_CONNECTTOACCESSPOINT 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_READY 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_RESETMODULE 0
 
 /*! Enumeration of all states */ 
 typedef enum
@@ -80,7 +83,10 @@ typedef enum
 	MqttClientStatemachine_main_region_Offline_r1_SetStationMode,
 	MqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt,
 	MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp,
-	MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint
+	MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint,
+	MqttClientStatemachine_main_region_Undefined,
+	MqttClientStatemachine_main_region_Undefined_r1_Ready,
+	MqttClientStatemachine_main_region_Undefined_r1_ResetModule
 } MqttClientStatemachineStates;
 
 
@@ -112,9 +118,12 @@ struct MqttClientStatemachineIfaceWizFi360
 	sc_boolean disconnectFromBroker_raised;
 	sc_observable publishTopic;
 	sc_boolean publishTopic_raised;
+	sc_observable resetModule;
+	sc_boolean resetModule_raised;
 	sc_boolean ok_raised;
 	sc_boolean error_raised;
 	sc_boolean fail_raised;
+	sc_boolean ready_raised;
 	sc_boolean wifiConnected;
 };
 
@@ -125,6 +134,7 @@ struct MqttClientStatemachineTimeEvents
 {
 	sc_boolean mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Offline_r1_Ready_tev0_raised;
+	sc_boolean mqttClientStatemachine_main_region_Undefined_r1_Ready_tev0_raised;
 };
 
 
@@ -136,12 +146,14 @@ struct MqttClientStatemachineIfaceWizFi360EvBuf {
 	sc_boolean ok_raised;
 	sc_boolean error_raised;
 	sc_boolean fail_raised;
+	sc_boolean ready_raised;
 };
 
 typedef struct MqttClientStatemachineTimeEventsEvBuf MqttClientStatemachineTimeEventsEvBuf;
 struct MqttClientStatemachineTimeEventsEvBuf {
 	sc_boolean MqttClientStatemachine_main_region_Online_r1_Wait_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Offline_r1_Ready_time_event_0_raised;
+	sc_boolean MqttClientStatemachine_main_region_Undefined_r1_Ready_time_event_0_raised;
 };
 
 typedef struct MqttClientStatemachineEvBuf MqttClientStatemachineEvBuf;
@@ -241,12 +253,20 @@ extern sc_observable* mqttClientStatemachine_WizFi360_get_publishTopic(MqttClien
 /*! Checks if the out event 'publishTopic' that is defined in the interface scope 'WizFi360' has been raised. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_publishTopic(const MqttClientStatemachine* handle);
 
+/*! Returns the observable for the out event 'resetModule' that is defined in the interface scope 'WizFi360'. */ 
+extern sc_observable* mqttClientStatemachine_WizFi360_get_resetModule(MqttClientStatemachine* handle);
+
+/*! Checks if the out event 'resetModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
+extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_resetModule(const MqttClientStatemachine* handle);
+
 /*! Raises the in event 'ok' that is defined in the interface scope 'WizFi360'. */ 
 extern void mqttClientStatemachine_WizFi360_raise_ok(MqttClientStatemachine* handle);
 /*! Raises the in event 'error' that is defined in the interface scope 'WizFi360'. */ 
 extern void mqttClientStatemachine_WizFi360_raise_error(MqttClientStatemachine* handle);
 /*! Raises the in event 'fail' that is defined in the interface scope 'WizFi360'. */ 
 extern void mqttClientStatemachine_WizFi360_raise_fail(MqttClientStatemachine* handle);
+/*! Raises the in event 'ready' that is defined in the interface scope 'WizFi360'. */ 
+extern void mqttClientStatemachine_WizFi360_raise_ready(MqttClientStatemachine* handle);
 /*! Gets the value of the variable 'wifiConnected' that is defined in the interface scope 'WizFi360'. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_get_wifiConnected(const MqttClientStatemachine* handle);
 /*! Sets the value of the variable 'wifiConnected' that is defined in the interface scope 'WizFi360'. */ 

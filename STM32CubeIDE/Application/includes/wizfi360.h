@@ -47,6 +47,13 @@
 #define WIZFI360_TAG_DIST_STA_IP			"+DIST_STA_IP:"
 #define WIZFI360_TAG_STA_DISCONNECTED		"+STA_DISCONNECTED:"
 
+/*
+ * Choose which WizFi Board is used
+ */
+#define WIZFI360_EVB_MINI
+// #define WIZFI360_EVB_SHIELD
+
+
 
 /*********************************************************************************************/
 
@@ -308,6 +315,12 @@ typedef struct __WIZFI360_HandlerTypedef
 void WIZFI360_Initialize();
 
 void WIZFI360_Process();
+
+void WIZFI360_Reset();
+
+void WIZFI360_ResetHard();
+
+void WIZFI360_ResetSoft();
 
 WIZFI360_State WIZFI360_GetState();
 
