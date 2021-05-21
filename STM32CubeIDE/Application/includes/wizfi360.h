@@ -18,7 +18,7 @@
 
 /* Defines ---------------------------------------------------------*/
 
-#define WIZFI360_MAX_CMD_LEN 				128
+#define WIZFI360_MAX_CMD_LEN 				256
 #define WIZFI360_MAX_AP_PWD_LEN 			 64
 #define WIZFI360_MAX_AP_SSID_LEN 			 32
 #define WIZFI360_MAX_MQQT_USERNAME_LEN		 50
@@ -353,6 +353,8 @@ void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
 void WIZFI360_WifiConnectedCallback();
 
 void WIZFI360_WifiConnectFailedCallback();
+
+void WIZFI360_ModuleReadyCallback();
 
 /*********************************************************************************************/
 

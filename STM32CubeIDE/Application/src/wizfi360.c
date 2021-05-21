@@ -82,8 +82,6 @@ static WIZFI360_HandlerTypedef wizfi360;
   */
 void WIZFI360_Initialize()
 {
-
-
 	WIZFI360_UART_Initialize();
 
 	// TODO: DO PROPER RESET
@@ -137,10 +135,31 @@ void WIZFI360_Reset()
  */
 void WIZFI360_ResetHard()
 {
+
+	HAL_UART_Abort(&huart2);
+	HAL_UART_AbortReceive(&huart2);
+
+	(&huart2)->Instance->CR1 &= ~USART_CR1_RE;
+
+
 	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_RESET);
-	HAL_Delay(10);
+	HAL_Delay(1);
 	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_SET);
+	HAL_Delay(10);
+
+	(&huart2)->Instance->CR1 |= USART_CR1_RE;
+
+	WIZFI360_Initialize();
 }
+
+extern uint32_t uart_error_ctr;
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	uart_error_ctr++;
+}
+
+
 
 /**
  * @brief	Resets the WizFi360 module using AT command
@@ -1145,7 +1164,7 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_READY:
 		{
-			ErrorHandler();
+			WIZFI360_ModuleReadyCallback();
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_CONNECTED:

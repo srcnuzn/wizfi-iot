@@ -82,13 +82,6 @@ static uint16_t ReadSensor()
 	return 0;
 }
 
-void MqttClient_Publish()
-{
-	MqttClient_PublishInteger("Time", HAL_GetTick());
-	MqttClient_PublishInteger( "Light", ReadSensor());
-	MqttClient_PublishString( "Message", "HelloWorld!");
-}
-
 /* USER CODE END 0 */
 
 /**

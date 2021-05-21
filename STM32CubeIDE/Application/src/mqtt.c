@@ -33,7 +33,7 @@
 
 // The message to publish
 
-#define MAX_PUB_MSG_SIZE	64
+#define MAX_PUB_MSG_SIZE	128
 static char message[MAX_PUB_MSG_SIZE] = { 0 };
 
 static uint32_t current_time = 0;
@@ -49,12 +49,39 @@ static sc_timer_t timers[MAX_TIMERS];
 // The timers are managed by a timer service.
 static sc_timer_service_t timer_service;
 
+
+volatile uint32_t uart_error_ctr = 0;
+
+volatile uint32_t timeout_ctr = 0;
+
+uint32_t configureMqttFailed_ctr = 0;
+uint32_t connectToAccessPointFailed_ctr = 0;
+uint32_t connectToBrokerFailed_ctr = 0;
+uint32_t publishTopicFailed_ctr = 0;
+uint32_t resetModuleFailed_ctr = 0;
+uint32_t setStationModeFailed_ctr = 0;
+uint32_t setTopicFailed_ctr = 0;
+uint32_t enableDhcpFailed_ctr = 0;
+
+
+void MqttClient_Publish()
+{
+	MqttClient_PublishInteger("time", HAL_GetTick());
+	MqttClient_PublishInteger( "uart", uart_error_ctr);
+	MqttClient_PublishInteger( "rst", resetModuleFailed_ctr);
+	MqttClient_PublishInteger( "pub", publishTopicFailed_ctr);
+	MqttClient_PublishInteger( "ap", connectToAccessPointFailed_ctr);
+}
+
 /*********************************************************************************************/
 
 /* Private function prototypes -----------------------------------------------*/
 
 static void mqttClientStatemachine_react_to_events();
 static void mqttClientStatemachine_write_inputs();
+static void mqttClientStatemachine_handle_reset_source();
+static void mqttClientStatemachine_handle_command_request();
+
 
 /*********************************************************************************************/
 
@@ -67,9 +94,6 @@ static void mqttClientStatemachine_write_inputs();
   */
 void MqttClient_Initialize()
 {
-	// Initialize the underlying wizfi360 module.
-	WIZFI360_Initialize();
-
 	/*! Initializes the timer service */
 	sc_timer_service_init(&timer_service, timers, MAX_TIMERS,
 	        (sc_raise_time_event_fp) &mqttClientStatemachine_raise_time_event);
@@ -92,6 +116,9 @@ void MqttClient_Initialize()
   */
 void MqttClient_Process()
 {
+	// Execute wizfi360 task
+	WIZFI360_Process();
+
 	// Get elapsed time
 	current_time = HAL_GetTick();
 	elapsed_time = current_time - last_time;
@@ -99,9 +126,6 @@ void MqttClient_Process()
 	// If task is ready...
 	if (current_time - last_time >= SAMPLE_TIME)
 	{
-		// Execute wizfi360 task
-		WIZFI360_Process();
-
 		// Update statemachine times.
 		sc_timer_service_proceed(&timer_service, elapsed_time);
 
@@ -176,30 +200,81 @@ static void mqttClientStatemachine_write_inputs()
   */
 static void mqttClientStatemachine_react_to_events()
 {
-	if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
-		WIZFI360_Reset();
+	mqttClientStatemachine_handle_reset_source();
 
+	// If the state machine requests a reset...
+	if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
+	{
+		// Reset the module
+		WIZFI360_Reset();
+	}
+	// else, if there is no reset request...
+	else
+	{
+		// Check for command requests and handle them.
+		mqttClientStatemachine_handle_command_request();
+	}
+}
+
+static void mqttClientStatemachine_handle_reset_source()
+{
+	if (mqttClientStatemachine_WizFi360_is_raised_configureMqttFailed(&sm))
+	{
+		configureMqttFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPointFailed(&sm))
+	{
+		connectToAccessPointFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_connectToBrokerFailed(&sm))
+	{
+		connectToBrokerFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_enableDhcpFailed(&sm))
+	{
+		enableDhcpFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_publishTopicFailed(&sm))
+	{
+		publishTopicFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_resetModuleFailed(&sm))
+	{
+		resetModuleFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_setStationModeFailed(&sm))
+	{
+		setStationModeFailed_ctr++;
+	}
+	if (mqttClientStatemachine_WizFi360_is_raised_setTopicFailed(&sm))
+	{
+		setTopicFailed_ctr++;
+	}
+}
+
+static void mqttClientStatemachine_handle_command_request()
+{
 	if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
 		WIZFI360_ConfigureMode(WIZFI360_MODE_STATION);
 
-	if (mqttClientStatemachine_WizFi360_is_raised_configureDhcp(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_enableDhcp(&sm))
 		WIZFI360_ConfigureDhcp(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
 
-	if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPoint(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPoint(&sm))
 		WIZFI360_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);
 
-	if (mqttClientStatemachine_WizFi360_is_raised_configureMqtt(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_configureMqtt(&sm))
 		WIZFI360_MqttInit(MQTT_USERNAME, MQTT_PASSWORD,
 				MQTT_CLIENT_ID, MQTT_ALIVE_TIME);
 
-	if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
 		WIZFI360_MqttSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
 
-	if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
 		WIZFI360_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
 		        MQTT_ADDRESS, MQTT_PORT);
 
-	if (mqttClientStatemachine_WizFi360_is_raised_publishTopic(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_publishTopic(&sm))
 	{
 		jwOpen(message, MAX_PUB_MSG_SIZE, JW_OBJECT, JW_COMPACT);
 
@@ -210,11 +285,6 @@ static void mqttClientStatemachine_react_to_events()
 
 		WIZFI360_MqttPublishMessage(message);
 	}
-
-	if (mqttClientStatemachine_WizFi360_is_raised_disconnectFromBroker(&sm))
-		//TODO: Call Disconnect Command
-		#warning("no disconnect command available");
-		;
 }
 
 /*********************************************************************************************/
@@ -291,5 +361,7 @@ void WIZFI360_ModuleReadyCallback()
 	// Raise the statemachine "fail" event.
 	mqttClientStatemachine_WizFi360_raise_ready(&sm);
 }
+
+
 
 /*********************************************************************************************/
