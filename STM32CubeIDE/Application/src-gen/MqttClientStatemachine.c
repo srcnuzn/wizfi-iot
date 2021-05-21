@@ -14,53 +14,103 @@
 #endif
 
 /* prototypes of all internal functions */
+static void effect_main_region_Undefined_tr0(MqttClientStatemachine* handle);
+static void effect_main_region_Online_tr1(MqttClientStatemachine* handle);
 static void effect_main_region_Offline_tr0(MqttClientStatemachine* handle);
+static void effect_main_region_Offline_tr1(MqttClientStatemachine* handle);
+static void effect_main_region_Offline_r1__choice_0_tr0(MqttClientStatemachine* handle);
+static void effect_main_region_Offline_r1__choice_1_tr0(MqttClientStatemachine* handle);
+static void effect_main_region_Offline_r1__choice_2_tr0(MqttClientStatemachine* handle);
+static void effect_main_region_Offline_r1__choice_3_tr0(MqttClientStatemachine* handle);
+static void effect_main_region_Offline_r1__choice_4_tr0(MqttClientStatemachine* handle);
+static void enact_main_region_Undefined_r1_Entry(MqttClientStatemachine* handle);
+static void enact_main_region_Undefined_r1_ResetModule(MqttClientStatemachine* handle);
+static void enact_main_region_Online_r1_ConnectToBroker(MqttClientStatemachine* handle);
+static void enact_main_region_Online_r1_PublishTopic(MqttClientStatemachine* handle);
 static void enact_main_region_Online_r1_Wait(MqttClientStatemachine* handle);
-static void enact_main_region_Offline_r1_Ready(MqttClientStatemachine* handle);
+static void enact_main_region_Offline_r1_SetTopic(MqttClientStatemachine* handle);
+static void enact_main_region_Offline_r1_Entry(MqttClientStatemachine* handle);
+static void enact_main_region_Offline_r1_SetStationMode(MqttClientStatemachine* handle);
+static void enact_main_region_Offline_r1_ConfigureMqtt(MqttClientStatemachine* handle);
+static void enact_main_region_Offline_r1_EnableDhcp(MqttClientStatemachine* handle);
+static void enact_main_region_Offline_r1_ConnectToAccesspoint(MqttClientStatemachine* handle);
+static void exact_main_region_Undefined_r1_Entry(MqttClientStatemachine* handle);
+static void exact_main_region_Undefined_r1_ResetModule(MqttClientStatemachine* handle);
+static void exact_main_region_Online_r1_ConnectToBroker(MqttClientStatemachine* handle);
+static void exact_main_region_Online_r1_PublishTopic(MqttClientStatemachine* handle);
 static void exact_main_region_Online_r1_Wait(MqttClientStatemachine* handle);
-static void exact_main_region_Offline_r1_Ready(MqttClientStatemachine* handle);
+static void exact_main_region_Offline_r1_SetTopic(MqttClientStatemachine* handle);
+static void exact_main_region_Offline_r1_Entry(MqttClientStatemachine* handle);
+static void exact_main_region_Offline_r1_SetStationMode(MqttClientStatemachine* handle);
+static void exact_main_region_Offline_r1_ConfigureMqtt(MqttClientStatemachine* handle);
+static void exact_main_region_Offline_r1_EnableDhcp(MqttClientStatemachine* handle);
+static void exact_main_region_Offline_r1_ConnectToAccesspoint(MqttClientStatemachine* handle);
+static void enseq_main_region_Undefined_default(MqttClientStatemachine* handle);
+static void enseq_main_region_Undefined_r1_Entry_default(MqttClientStatemachine* handle);
+static void enseq_main_region_Undefined_r1_ResetModule_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Online_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Online_r1_ConnectToBroker_default(MqttClientStatemachine* handle);
-static void enseq_main_region_Online_r1_Ready_default(MqttClientStatemachine* handle);
+static void enseq_main_region_Online_r1_Entry_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Online_r1_PublishTopic_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Online_r1_Wait_default(MqttClientStatemachine* handle);
-static void enseq_main_region_Online_r1_DisconnectFromBroker_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_WifiConnectionLost(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_r1_SetTopic_default(MqttClientStatemachine* handle);
-static void enseq_main_region_Offline_r1_Ready_default(MqttClientStatemachine* handle);
+static void enseq_main_region_Offline_r1_Entry_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_r1_SetStationMode_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_r1_ConfigureMqtt_default(MqttClientStatemachine* handle);
-static void enseq_main_region_Offline_r1_ConfigureDhcp_default(MqttClientStatemachine* handle);
+static void enseq_main_region_Offline_r1_EnableDhcp_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_r1_ConnectToAccesspoint_default(MqttClientStatemachine* handle);
 static void enseq_main_region_default(MqttClientStatemachine* handle);
+static void enseq_main_region_Undefined_r1_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Online_r1_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_r1_default(MqttClientStatemachine* handle);
 static void enseq_main_region_Offline_r1_WifiConnectionLost(MqttClientStatemachine* handle);
+static void exseq_main_region_Undefined(MqttClientStatemachine* handle);
+static void exseq_main_region_Undefined_r1_Entry(MqttClientStatemachine* handle);
+static void exseq_main_region_Undefined_r1_ResetModule(MqttClientStatemachine* handle);
 static void exseq_main_region_Online(MqttClientStatemachine* handle);
 static void exseq_main_region_Online_r1_ConnectToBroker(MqttClientStatemachine* handle);
-static void exseq_main_region_Online_r1_Ready(MqttClientStatemachine* handle);
+static void exseq_main_region_Online_r1_Entry(MqttClientStatemachine* handle);
 static void exseq_main_region_Online_r1_PublishTopic(MqttClientStatemachine* handle);
 static void exseq_main_region_Online_r1_Wait(MqttClientStatemachine* handle);
-static void exseq_main_region_Online_r1_DisconnectFromBroker(MqttClientStatemachine* handle);
 static void exseq_main_region_Offline(MqttClientStatemachine* handle);
 static void exseq_main_region_Offline_r1_SetTopic(MqttClientStatemachine* handle);
-static void exseq_main_region_Offline_r1_Ready(MqttClientStatemachine* handle);
+static void exseq_main_region_Offline_r1_Entry(MqttClientStatemachine* handle);
 static void exseq_main_region_Offline_r1_SetStationMode(MqttClientStatemachine* handle);
 static void exseq_main_region_Offline_r1_ConfigureMqtt(MqttClientStatemachine* handle);
-static void exseq_main_region_Offline_r1_ConfigureDhcp(MqttClientStatemachine* handle);
+static void exseq_main_region_Offline_r1_EnableDhcp(MqttClientStatemachine* handle);
 static void exseq_main_region_Offline_r1_ConnectToAccesspoint(MqttClientStatemachine* handle);
 static void exseq_main_region(MqttClientStatemachine* handle);
+static void exseq_main_region_Undefined_r1(MqttClientStatemachine* handle);
 static void exseq_main_region_Online_r1(MqttClientStatemachine* handle);
 static void exseq_main_region_Offline_r1(MqttClientStatemachine* handle);
+static void react_main_region_Offline_r1__choice_0(MqttClientStatemachine* handle);
+static void react_main_region_Offline_r1__choice_1(MqttClientStatemachine* handle);
+static void react_main_region_Offline_r1__choice_2(MqttClientStatemachine* handle);
+static void react_main_region_Offline_r1__choice_3(MqttClientStatemachine* handle);
+static void react_main_region_Offline_r1__choice_4(MqttClientStatemachine* handle);
+static void react_main_region__entry_Default(MqttClientStatemachine* handle);
+static void react_main_region_Undefined_r1__entry_Default(MqttClientStatemachine* handle);
 static void react_main_region_Online_r1__entry_Default(MqttClientStatemachine* handle);
 static void react_main_region_Offline_r1__entry_Default(MqttClientStatemachine* handle);
 static void react_main_region_Offline_r1_WifiConnectionLost(MqttClientStatemachine* handle);
-static void react_main_region__entry_Default(MqttClientStatemachine* handle);
+static void react_main_region_Undefined_r1_ModuleReady(MqttClientStatemachine* handle);
+static void react_main_region_Online_r1_ResetModule(MqttClientStatemachine* handle);
 static void react_main_region_Offline_r1_WifiConnectionEstablished(MqttClientStatemachine* handle);
+static void react_main_region_Offline_r1_ResetModule(MqttClientStatemachine* handle);
 
 /*! State machine reactions. */
 static sc_integer react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
+
+/*! The reactions of state Undefined. */
+static sc_integer main_region_Undefined_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
+
+/*! The reactions of state Entry. */
+static sc_integer main_region_Undefined_r1_Entry_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
+
+/*! The reactions of state ResetModule. */
+static sc_integer main_region_Undefined_r1_ResetModule_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
 /*! The reactions of state Online. */
 static sc_integer main_region_Online_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
@@ -68,8 +118,8 @@ static sc_integer main_region_Online_react(MqttClientStatemachine* handle, const
 /*! The reactions of state ConnectToBroker. */
 static sc_integer main_region_Online_r1_ConnectToBroker_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
-/*! The reactions of state Ready. */
-static sc_integer main_region_Online_r1_Ready_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
+/*! The reactions of state Entry. */
+static sc_integer main_region_Online_r1_Entry_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
 /*! The reactions of state PublishTopic. */
 static sc_integer main_region_Online_r1_PublishTopic_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
@@ -77,17 +127,14 @@ static sc_integer main_region_Online_r1_PublishTopic_react(MqttClientStatemachin
 /*! The reactions of state Wait. */
 static sc_integer main_region_Online_r1_Wait_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
-/*! The reactions of state DisconnectFromBroker. */
-static sc_integer main_region_Online_r1_DisconnectFromBroker_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
-
 /*! The reactions of state Offline. */
 static sc_integer main_region_Offline_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
 /*! The reactions of state SetTopic. */
 static sc_integer main_region_Offline_r1_SetTopic_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
-/*! The reactions of state Ready. */
-static sc_integer main_region_Offline_r1_Ready_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
+/*! The reactions of state Entry. */
+static sc_integer main_region_Offline_r1_Entry_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
 /*! The reactions of state SetStationMode. */
 static sc_integer main_region_Offline_r1_SetStationMode_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
@@ -95,8 +142,8 @@ static sc_integer main_region_Offline_r1_SetStationMode_react(MqttClientStatemac
 /*! The reactions of state ConfigureMqtt. */
 static sc_integer main_region_Offline_r1_ConfigureMqtt_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
-/*! The reactions of state ConfigureDhcp. */
-static sc_integer main_region_Offline_r1_ConfigureDhcp_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
+/*! The reactions of state EnableDhcp. */
+static sc_integer main_region_Offline_r1_EnableDhcp_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
 /*! The reactions of state ConnectToAccesspoint. */
 static sc_integer main_region_Offline_r1_ConnectToAccesspoint_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
@@ -129,18 +176,28 @@ void mqttClientStatemachine_init(MqttClientStatemachine* handle)
 	clear_out_events(handle);
 	
 	sc_observable_init(&handle->ifaceWizFi360.setStationMode);
-	sc_observable_init(&handle->ifaceWizFi360.configureDhcp);
+	sc_observable_init(&handle->ifaceWizFi360.enableDhcp);
 	sc_observable_init(&handle->ifaceWizFi360.connectToAccessPoint);
 	sc_observable_init(&handle->ifaceWizFi360.configureMqtt);
 	sc_observable_init(&handle->ifaceWizFi360.setTopic);
 	sc_observable_init(&handle->ifaceWizFi360.connectToBroker);
-	sc_observable_init(&handle->ifaceWizFi360.disconnectFromBroker);
 	sc_observable_init(&handle->ifaceWizFi360.publishTopic);
+	sc_observable_init(&handle->ifaceWizFi360.resetModule);
+	sc_observable_init(&handle->ifaceWizFi360.setStationModeFailed);
+	sc_observable_init(&handle->ifaceWizFi360.enableDhcpFailed);
+	sc_observable_init(&handle->ifaceWizFi360.connectToAccessPointFailed);
+	sc_observable_init(&handle->ifaceWizFi360.configureMqttFailed);
+	sc_observable_init(&handle->ifaceWizFi360.setTopicFailed);
+	sc_observable_init(&handle->ifaceWizFi360.connectToBrokerFailed);
+	sc_observable_init(&handle->ifaceWizFi360.publishTopicFailed);
+	sc_observable_init(&handle->ifaceWizFi360.resetModuleFailed);
 	
 	/* Default init sequence for statechart MqttClientStatemachine */
 	handle->iface.dT = 200;
 	handle->iface.publishInterval = 1000;
+	handle->iface.watchdogTimer = 0;
 	handle->ifaceWizFi360.wifiConnected = bool_false;
+	handle->ifaceWizFi360.wifiFailCounter = 0;
 	
 	handle->isExecuting = bool_false;
 }
@@ -222,16 +279,28 @@ sc_boolean mqttClientStatemachine_is_state_active(const MqttClientStatemachine* 
 	sc_boolean result = bool_false;
 	switch (state)
 	{
+		case MqttClientStatemachine_main_region_Undefined :
+			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED] >= MqttClientStatemachine_main_region_Undefined
+				&& handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED] <= MqttClientStatemachine_main_region_Undefined_r1_ResetModule);
+			break;
+		case MqttClientStatemachine_main_region_Undefined_r1_Entry :
+			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_ENTRY] == MqttClientStatemachine_main_region_Undefined_r1_Entry
+			);
+			break;
+		case MqttClientStatemachine_main_region_Undefined_r1_ResetModule :
+			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_RESETMODULE] == MqttClientStatemachine_main_region_Undefined_r1_ResetModule
+			);
+			break;
 		case MqttClientStatemachine_main_region_Online :
 			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE] >= MqttClientStatemachine_main_region_Online
-				&& handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE] <= MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker);
+				&& handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE] <= MqttClientStatemachine_main_region_Online_r1_Wait);
 			break;
 		case MqttClientStatemachine_main_region_Online_r1_ConnectToBroker :
 			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_CONNECTTOBROKER] == MqttClientStatemachine_main_region_Online_r1_ConnectToBroker
 			);
 			break;
-		case MqttClientStatemachine_main_region_Online_r1_Ready :
-			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_READY] == MqttClientStatemachine_main_region_Online_r1_Ready
+		case MqttClientStatemachine_main_region_Online_r1_Entry :
+			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_ENTRY] == MqttClientStatemachine_main_region_Online_r1_Entry
 			);
 			break;
 		case MqttClientStatemachine_main_region_Online_r1_PublishTopic :
@@ -242,10 +311,6 @@ sc_boolean mqttClientStatemachine_is_state_active(const MqttClientStatemachine* 
 			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_WAIT] == MqttClientStatemachine_main_region_Online_r1_Wait
 			);
 			break;
-		case MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker :
-			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_DISCONNECTFROMBROKER] == MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker
-			);
-			break;
 		case MqttClientStatemachine_main_region_Offline :
 			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE] >= MqttClientStatemachine_main_region_Offline
 				&& handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE] <= MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint);
@@ -254,8 +319,8 @@ sc_boolean mqttClientStatemachine_is_state_active(const MqttClientStatemachine* 
 			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_SETTOPIC] == MqttClientStatemachine_main_region_Offline_r1_SetTopic
 			);
 			break;
-		case MqttClientStatemachine_main_region_Offline_r1_Ready :
-			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_READY] == MqttClientStatemachine_main_region_Offline_r1_Ready
+		case MqttClientStatemachine_main_region_Offline_r1_Entry :
+			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_ENTRY] == MqttClientStatemachine_main_region_Offline_r1_Entry
 			);
 			break;
 		case MqttClientStatemachine_main_region_Offline_r1_SetStationMode :
@@ -266,8 +331,8 @@ sc_boolean mqttClientStatemachine_is_state_active(const MqttClientStatemachine* 
 			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_CONFIGUREMQTT] == MqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt
 			);
 			break;
-		case MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp :
-			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_CONFIGUREDHCP] == MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp
+		case MqttClientStatemachine_main_region_Offline_r1_EnableDhcp :
+			result = (sc_boolean) (handle->stateConfVector[SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_ENABLEDHCP] == MqttClientStatemachine_main_region_Offline_r1_EnableDhcp
 			);
 			break;
 		case MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint :
@@ -284,13 +349,21 @@ sc_boolean mqttClientStatemachine_is_state_active(const MqttClientStatemachine* 
 static void clear_out_events(MqttClientStatemachine* handle)
 {
 	handle->ifaceWizFi360.setStationMode_raised = bool_false;
-	handle->ifaceWizFi360.configureDhcp_raised = bool_false;
+	handle->ifaceWizFi360.enableDhcp_raised = bool_false;
 	handle->ifaceWizFi360.connectToAccessPoint_raised = bool_false;
 	handle->ifaceWizFi360.configureMqtt_raised = bool_false;
 	handle->ifaceWizFi360.setTopic_raised = bool_false;
 	handle->ifaceWizFi360.connectToBroker_raised = bool_false;
-	handle->ifaceWizFi360.disconnectFromBroker_raised = bool_false;
 	handle->ifaceWizFi360.publishTopic_raised = bool_false;
+	handle->ifaceWizFi360.resetModule_raised = bool_false;
+	handle->ifaceWizFi360.setStationModeFailed_raised = bool_false;
+	handle->ifaceWizFi360.enableDhcpFailed_raised = bool_false;
+	handle->ifaceWizFi360.connectToAccessPointFailed_raised = bool_false;
+	handle->ifaceWizFi360.configureMqttFailed_raised = bool_false;
+	handle->ifaceWizFi360.setTopicFailed_raised = bool_false;
+	handle->ifaceWizFi360.connectToBrokerFailed_raised = bool_false;
+	handle->ifaceWizFi360.publishTopicFailed_raised = bool_false;
+	handle->ifaceWizFi360.resetModuleFailed_raised = bool_false;
 }
 
 static void swap_in_events(MqttClientStatemachine* handle)
@@ -301,10 +374,30 @@ static void swap_in_events(MqttClientStatemachine* handle)
 	handle->ifaceWizFi360.error_raised = bool_false;
 	handle->current.ifaceWizFi360.fail_raised = handle->ifaceWizFi360.fail_raised;
 	handle->ifaceWizFi360.fail_raised = bool_false;
+	handle->current.ifaceWizFi360.ready_raised = handle->ifaceWizFi360.ready_raised;
+	handle->ifaceWizFi360.ready_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Undefined_r1_Entry_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_Entry_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_Entry_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Undefined_r1_ResetModule_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_ResetModule_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_ResetModule_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Online_r1_ConnectToBroker_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_ConnectToBroker_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_ConnectToBroker_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Online_r1_PublishTopic_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_PublishTopic_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_PublishTopic_tev0_raised = bool_false;
 	handle->current.timeEvents.MqttClientStatemachine_main_region_Online_r1_Wait_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised;
 	handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised = bool_false;
-	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_Ready_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Ready_tev0_raised;
-	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Ready_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_SetTopic_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetTopic_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetTopic_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_Entry_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Entry_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Entry_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_SetStationMode_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetStationMode_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetStationMode_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_EnableDhcp_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_EnableDhcp_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_EnableDhcp_tev0_raised = bool_false;
+	handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_time_event_0_raised = handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_tev0_raised;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_tev0_raised = bool_false;
 }
 
 static void clear_in_events(MqttClientStatemachine* handle)
@@ -312,22 +405,42 @@ static void clear_in_events(MqttClientStatemachine* handle)
 	handle->ifaceWizFi360.ok_raised = bool_false;
 	handle->ifaceWizFi360.error_raised = bool_false;
 	handle->ifaceWizFi360.fail_raised = bool_false;
+	handle->ifaceWizFi360.ready_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_Entry_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_ResetModule_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_ConnectToBroker_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_PublishTopic_tev0_raised = bool_false;
 	handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised = bool_false;
-	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Ready_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetTopic_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Entry_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetStationMode_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_EnableDhcp_tev0_raised = bool_false;
+	handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_tev0_raised = bool_false;
 }
 
 static void micro_step(MqttClientStatemachine* handle)
 {
 	switch(handle->stateConfVector[ 0 ])
 	{
+		case MqttClientStatemachine_main_region_Undefined_r1_Entry :
+		{
+			main_region_Undefined_r1_Entry_react(handle, -1);
+			break;
+		}
+		case MqttClientStatemachine_main_region_Undefined_r1_ResetModule :
+		{
+			main_region_Undefined_r1_ResetModule_react(handle, -1);
+			break;
+		}
 		case MqttClientStatemachine_main_region_Online_r1_ConnectToBroker :
 		{
 			main_region_Online_r1_ConnectToBroker_react(handle, -1);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Online_r1_Ready :
+		case MqttClientStatemachine_main_region_Online_r1_Entry :
 		{
-			main_region_Online_r1_Ready_react(handle, -1);
+			main_region_Online_r1_Entry_react(handle, -1);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Online_r1_PublishTopic :
@@ -340,19 +453,14 @@ static void micro_step(MqttClientStatemachine* handle)
 			main_region_Online_r1_Wait_react(handle, -1);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker :
-		{
-			main_region_Online_r1_DisconnectFromBroker_react(handle, -1);
-			break;
-		}
 		case MqttClientStatemachine_main_region_Offline_r1_SetTopic :
 		{
 			main_region_Offline_r1_SetTopic_react(handle, -1);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Offline_r1_Ready :
+		case MqttClientStatemachine_main_region_Offline_r1_Entry :
 		{
-			main_region_Offline_r1_Ready_react(handle, -1);
+			main_region_Offline_r1_Entry_react(handle, -1);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Offline_r1_SetStationMode :
@@ -365,9 +473,9 @@ static void micro_step(MqttClientStatemachine* handle)
 			main_region_Offline_r1_ConfigureMqtt_react(handle, -1);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp :
+		case MqttClientStatemachine_main_region_Offline_r1_EnableDhcp :
 		{
-			main_region_Offline_r1_ConfigureDhcp_react(handle, -1);
+			main_region_Offline_r1_EnableDhcp_react(handle, -1);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint :
@@ -398,6 +506,14 @@ void mqttClientStatemachine_set_publishInterval(MqttClientStatemachine* handle, 
 {
 	handle->iface.publishInterval = value;
 }
+sc_integer mqttClientStatemachine_get_watchdogTimer(const MqttClientStatemachine* handle)
+{
+	return handle->iface.watchdogTimer;
+}
+void mqttClientStatemachine_set_watchdogTimer(MqttClientStatemachine* handle, sc_integer value)
+{
+	handle->iface.watchdogTimer = value;
+}
 void mqttClientStatemachine_WizFi360_raise_ok(MqttClientStatemachine* handle)
 {
 	handle->ifaceWizFi360.ok_raised = bool_true;
@@ -413,6 +529,11 @@ void mqttClientStatemachine_WizFi360_raise_fail(MqttClientStatemachine* handle)
 	handle->ifaceWizFi360.fail_raised = bool_true;
 }
 
+void mqttClientStatemachine_WizFi360_raise_ready(MqttClientStatemachine* handle)
+{
+	handle->ifaceWizFi360.ready_raised = bool_true;
+}
+
 
 sc_observable* mqttClientStatemachine_WizFi360_get_setStationMode(MqttClientStatemachine* handle)
 {
@@ -422,13 +543,13 @@ sc_boolean mqttClientStatemachine_WizFi360_is_raised_setStationMode(const MqttCl
 {
 	return handle->ifaceWizFi360.setStationMode_raised;
 }
-sc_observable* mqttClientStatemachine_WizFi360_get_configureDhcp(MqttClientStatemachine* handle)
+sc_observable* mqttClientStatemachine_WizFi360_get_enableDhcp(MqttClientStatemachine* handle)
 {
-	return &handle->ifaceWizFi360.configureDhcp;
+	return &handle->ifaceWizFi360.enableDhcp;
 }
-sc_boolean mqttClientStatemachine_WizFi360_is_raised_configureDhcp(const MqttClientStatemachine* handle)
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_enableDhcp(const MqttClientStatemachine* handle)
 {
-	return handle->ifaceWizFi360.configureDhcp_raised;
+	return handle->ifaceWizFi360.enableDhcp_raised;
 }
 sc_observable* mqttClientStatemachine_WizFi360_get_connectToAccessPoint(MqttClientStatemachine* handle)
 {
@@ -462,14 +583,6 @@ sc_boolean mqttClientStatemachine_WizFi360_is_raised_connectToBroker(const MqttC
 {
 	return handle->ifaceWizFi360.connectToBroker_raised;
 }
-sc_observable* mqttClientStatemachine_WizFi360_get_disconnectFromBroker(MqttClientStatemachine* handle)
-{
-	return &handle->ifaceWizFi360.disconnectFromBroker;
-}
-sc_boolean mqttClientStatemachine_WizFi360_is_raised_disconnectFromBroker(const MqttClientStatemachine* handle)
-{
-	return handle->ifaceWizFi360.disconnectFromBroker_raised;
-}
 sc_observable* mqttClientStatemachine_WizFi360_get_publishTopic(MqttClientStatemachine* handle)
 {
 	return &handle->ifaceWizFi360.publishTopic;
@@ -477,6 +590,78 @@ sc_observable* mqttClientStatemachine_WizFi360_get_publishTopic(MqttClientStatem
 sc_boolean mqttClientStatemachine_WizFi360_is_raised_publishTopic(const MqttClientStatemachine* handle)
 {
 	return handle->ifaceWizFi360.publishTopic_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_resetModule(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.resetModule;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_resetModule(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.resetModule_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_setStationModeFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.setStationModeFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_setStationModeFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.setStationModeFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_enableDhcpFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.enableDhcpFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_enableDhcpFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.enableDhcpFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_connectToAccessPointFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.connectToAccessPointFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_connectToAccessPointFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.connectToAccessPointFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_configureMqttFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.configureMqttFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_configureMqttFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.configureMqttFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_setTopicFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.setTopicFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_setTopicFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.setTopicFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_connectToBrokerFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.connectToBrokerFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_connectToBrokerFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.connectToBrokerFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_publishTopicFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.publishTopicFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_publishTopicFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.publishTopicFailed_raised;
+}
+sc_observable* mqttClientStatemachine_WizFi360_get_resetModuleFailed(MqttClientStatemachine* handle)
+{
+	return &handle->ifaceWizFi360.resetModuleFailed;
+}
+sc_boolean mqttClientStatemachine_WizFi360_is_raised_resetModuleFailed(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.resetModuleFailed_raised;
 }
 
 sc_boolean mqttClientStatemachine_WizFi360_get_wifiConnected(const MqttClientStatemachine* handle)
@@ -487,14 +672,98 @@ void mqttClientStatemachine_WizFi360_set_wifiConnected(MqttClientStatemachine* h
 {
 	handle->ifaceWizFi360.wifiConnected = value;
 }
+sc_integer mqttClientStatemachine_WizFi360_get_wifiFailCounter(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.wifiFailCounter;
+}
+void mqttClientStatemachine_WizFi360_set_wifiFailCounter(MqttClientStatemachine* handle, sc_integer value)
+{
+	handle->ifaceWizFi360.wifiFailCounter = value;
+}
 
 /* implementations of all internal functions */
+
+static void effect_main_region_Undefined_tr0(MqttClientStatemachine* handle)
+{
+	exseq_main_region_Undefined(handle);
+	enseq_main_region_Offline_default(handle);
+	react(handle, 0);
+}
+
+static void effect_main_region_Online_tr1(MqttClientStatemachine* handle)
+{
+	exseq_main_region_Online(handle);
+	enseq_main_region_Undefined_default(handle);
+	react(handle, 0);
+}
 
 static void effect_main_region_Offline_tr0(MqttClientStatemachine* handle)
 {
 	exseq_main_region_Offline(handle);
 	enseq_main_region_Online_default(handle);
 	react(handle, 0);
+}
+
+static void effect_main_region_Offline_tr1(MqttClientStatemachine* handle)
+{
+	exseq_main_region_Offline(handle);
+	enseq_main_region_Undefined_default(handle);
+	react(handle, 0);
+}
+
+static void effect_main_region_Offline_r1__choice_0_tr0(MqttClientStatemachine* handle)
+{
+	react_main_region_Offline_r1__choice_1(handle);
+}
+
+static void effect_main_region_Offline_r1__choice_1_tr0(MqttClientStatemachine* handle)
+{
+	react_main_region_Offline_r1__choice_2(handle);
+}
+
+static void effect_main_region_Offline_r1__choice_2_tr0(MqttClientStatemachine* handle)
+{
+	react_main_region_Offline_r1__choice_3(handle);
+}
+
+static void effect_main_region_Offline_r1__choice_3_tr0(MqttClientStatemachine* handle)
+{
+	react_main_region_Offline_r1_ResetModule(handle);
+}
+
+static void effect_main_region_Offline_r1__choice_4_tr0(MqttClientStatemachine* handle)
+{
+	sc_observable_next(&handle->ifaceWizFi360.connectToAccessPointFailed);
+	handle->ifaceWizFi360.connectToAccessPointFailed_raised = bool_true;
+	react_main_region_Offline_r1_ResetModule(handle);
+}
+
+/* Entry action for state 'Entry'. */
+static void enact_main_region_Undefined_r1_Entry(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'Entry'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_Entry_tev0_raised) , (1 * 1000), bool_false);
+}
+
+/* Entry action for state 'ResetModule'. */
+static void enact_main_region_Undefined_r1_ResetModule(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'ResetModule'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_ResetModule_tev0_raised) , (4 * 1000), bool_false);
+}
+
+/* Entry action for state 'ConnectToBroker'. */
+static void enact_main_region_Online_r1_ConnectToBroker(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'ConnectToBroker'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_ConnectToBroker_tev0_raised) , (10 * 1000), bool_false);
+}
+
+/* Entry action for state 'PublishTopic'. */
+static void enact_main_region_Online_r1_PublishTopic(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'PublishTopic'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_PublishTopic_tev0_raised) , (5 * 1000), bool_false);
 }
 
 /* Entry action for state 'Wait'. */
@@ -504,11 +773,74 @@ static void enact_main_region_Online_r1_Wait(MqttClientStatemachine* handle)
 	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised) , ((handle->iface.publishInterval - (2 * handle->iface.dT))), bool_false);
 }
 
-/* Entry action for state 'Ready'. */
-static void enact_main_region_Offline_r1_Ready(MqttClientStatemachine* handle)
+/* Entry action for state 'SetTopic'. */
+static void enact_main_region_Offline_r1_SetTopic(MqttClientStatemachine* handle)
 {
-	/* Entry action for state 'Ready'. */
-	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Ready_tev0_raised) , (1 * 1000), bool_false);
+	/* Entry action for state 'SetTopic'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetTopic_tev0_raised) , (2 * 1000), bool_false);
+}
+
+/* Entry action for state 'Entry'. */
+static void enact_main_region_Offline_r1_Entry(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'Entry'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Entry_tev0_raised) , (1 * 1000), bool_false);
+}
+
+/* Entry action for state 'SetStationMode'. */
+static void enact_main_region_Offline_r1_SetStationMode(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'SetStationMode'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetStationMode_tev0_raised) , (2 * 1000), bool_false);
+}
+
+/* Entry action for state 'ConfigureMqtt'. */
+static void enact_main_region_Offline_r1_ConfigureMqtt(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'ConfigureMqtt'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_tev0_raised) , (2 * 1000), bool_false);
+}
+
+/* Entry action for state 'EnableDhcp'. */
+static void enact_main_region_Offline_r1_EnableDhcp(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'EnableDhcp'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_EnableDhcp_tev0_raised) , (2 * 1000), bool_false);
+}
+
+/* Entry action for state 'ConnectToAccesspoint'. */
+static void enact_main_region_Offline_r1_ConnectToAccesspoint(MqttClientStatemachine* handle)
+{
+	/* Entry action for state 'ConnectToAccesspoint'. */
+	mqttClientStatemachine_set_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_tev0_raised) , (30 * 1000), bool_false);
+}
+
+/* Exit action for state 'Entry'. */
+static void exact_main_region_Undefined_r1_Entry(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'Entry'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_Entry_tev0_raised) );		
+}
+
+/* Exit action for state 'ResetModule'. */
+static void exact_main_region_Undefined_r1_ResetModule(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'ResetModule'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Undefined_r1_ResetModule_tev0_raised) );		
+}
+
+/* Exit action for state 'ConnectToBroker'. */
+static void exact_main_region_Online_r1_ConnectToBroker(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'ConnectToBroker'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_ConnectToBroker_tev0_raised) );		
+}
+
+/* Exit action for state 'PublishTopic'. */
+static void exact_main_region_Online_r1_PublishTopic(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'PublishTopic'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_PublishTopic_tev0_raised) );		
 }
 
 /* Exit action for state 'Wait'. */
@@ -518,11 +850,69 @@ static void exact_main_region_Online_r1_Wait(MqttClientStatemachine* handle)
 	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised) );		
 }
 
-/* Exit action for state 'Ready'. */
-static void exact_main_region_Offline_r1_Ready(MqttClientStatemachine* handle)
+/* Exit action for state 'SetTopic'. */
+static void exact_main_region_Offline_r1_SetTopic(MqttClientStatemachine* handle)
 {
-	/* Exit action for state 'Ready'. */
-	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Ready_tev0_raised) );		
+	/* Exit action for state 'SetTopic'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetTopic_tev0_raised) );		
+}
+
+/* Exit action for state 'Entry'. */
+static void exact_main_region_Offline_r1_Entry(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'Entry'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_Entry_tev0_raised) );		
+}
+
+/* Exit action for state 'SetStationMode'. */
+static void exact_main_region_Offline_r1_SetStationMode(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'SetStationMode'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_SetStationMode_tev0_raised) );		
+}
+
+/* Exit action for state 'ConfigureMqtt'. */
+static void exact_main_region_Offline_r1_ConfigureMqtt(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'ConfigureMqtt'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_tev0_raised) );		
+}
+
+/* Exit action for state 'EnableDhcp'. */
+static void exact_main_region_Offline_r1_EnableDhcp(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'EnableDhcp'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_EnableDhcp_tev0_raised) );		
+}
+
+/* Exit action for state 'ConnectToAccesspoint'. */
+static void exact_main_region_Offline_r1_ConnectToAccesspoint(MqttClientStatemachine* handle)
+{
+	/* Exit action for state 'ConnectToAccesspoint'. */
+	mqttClientStatemachine_unset_timer(handle, (sc_eventid) &(handle->timeEvents.mqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_tev0_raised) );		
+}
+
+/* 'default' enter sequence for state Undefined */
+static void enseq_main_region_Undefined_default(MqttClientStatemachine* handle)
+{
+	/* 'default' enter sequence for state Undefined */
+	enseq_main_region_Undefined_r1_default(handle);
+}
+
+/* 'default' enter sequence for state Entry */
+static void enseq_main_region_Undefined_r1_Entry_default(MqttClientStatemachine* handle)
+{
+	/* 'default' enter sequence for state Entry */
+	enact_main_region_Undefined_r1_Entry(handle);
+	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Undefined_r1_Entry;
+}
+
+/* 'default' enter sequence for state ResetModule */
+static void enseq_main_region_Undefined_r1_ResetModule_default(MqttClientStatemachine* handle)
+{
+	/* 'default' enter sequence for state ResetModule */
+	enact_main_region_Undefined_r1_ResetModule(handle);
+	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Undefined_r1_ResetModule;
 }
 
 /* 'default' enter sequence for state Online */
@@ -536,20 +926,22 @@ static void enseq_main_region_Online_default(MqttClientStatemachine* handle)
 static void enseq_main_region_Online_r1_ConnectToBroker_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for state ConnectToBroker */
+	enact_main_region_Online_r1_ConnectToBroker(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Online_r1_ConnectToBroker;
 }
 
-/* 'default' enter sequence for state Ready */
-static void enseq_main_region_Online_r1_Ready_default(MqttClientStatemachine* handle)
+/* 'default' enter sequence for state Entry */
+static void enseq_main_region_Online_r1_Entry_default(MqttClientStatemachine* handle)
 {
-	/* 'default' enter sequence for state Ready */
-	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Online_r1_Ready;
+	/* 'default' enter sequence for state Entry */
+	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Online_r1_Entry;
 }
 
 /* 'default' enter sequence for state PublishTopic */
 static void enseq_main_region_Online_r1_PublishTopic_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for state PublishTopic */
+	enact_main_region_Online_r1_PublishTopic(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Online_r1_PublishTopic;
 }
 
@@ -559,13 +951,6 @@ static void enseq_main_region_Online_r1_Wait_default(MqttClientStatemachine* han
 	/* 'default' enter sequence for state Wait */
 	enact_main_region_Online_r1_Wait(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Online_r1_Wait;
-}
-
-/* 'default' enter sequence for state DisconnectFromBroker */
-static void enseq_main_region_Online_r1_DisconnectFromBroker_default(MqttClientStatemachine* handle)
-{
-	/* 'default' enter sequence for state DisconnectFromBroker */
-	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker;
 }
 
 /* 'WifiConnectionLost' enter sequence for state Offline */
@@ -586,21 +971,23 @@ static void enseq_main_region_Offline_default(MqttClientStatemachine* handle)
 static void enseq_main_region_Offline_r1_SetTopic_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for state SetTopic */
+	enact_main_region_Offline_r1_SetTopic(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_SetTopic;
 }
 
-/* 'default' enter sequence for state Ready */
-static void enseq_main_region_Offline_r1_Ready_default(MqttClientStatemachine* handle)
+/* 'default' enter sequence for state Entry */
+static void enseq_main_region_Offline_r1_Entry_default(MqttClientStatemachine* handle)
 {
-	/* 'default' enter sequence for state Ready */
-	enact_main_region_Offline_r1_Ready(handle);
-	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_Ready;
+	/* 'default' enter sequence for state Entry */
+	enact_main_region_Offline_r1_Entry(handle);
+	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_Entry;
 }
 
 /* 'default' enter sequence for state SetStationMode */
 static void enseq_main_region_Offline_r1_SetStationMode_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for state SetStationMode */
+	enact_main_region_Offline_r1_SetStationMode(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_SetStationMode;
 }
 
@@ -608,20 +995,23 @@ static void enseq_main_region_Offline_r1_SetStationMode_default(MqttClientStatem
 static void enseq_main_region_Offline_r1_ConfigureMqtt_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for state ConfigureMqtt */
+	enact_main_region_Offline_r1_ConfigureMqtt(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt;
 }
 
-/* 'default' enter sequence for state ConfigureDhcp */
-static void enseq_main_region_Offline_r1_ConfigureDhcp_default(MqttClientStatemachine* handle)
+/* 'default' enter sequence for state EnableDhcp */
+static void enseq_main_region_Offline_r1_EnableDhcp_default(MqttClientStatemachine* handle)
 {
-	/* 'default' enter sequence for state ConfigureDhcp */
-	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp;
+	/* 'default' enter sequence for state EnableDhcp */
+	enact_main_region_Offline_r1_EnableDhcp(handle);
+	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_EnableDhcp;
 }
 
 /* 'default' enter sequence for state ConnectToAccesspoint */
 static void enseq_main_region_Offline_r1_ConnectToAccesspoint_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for state ConnectToAccesspoint */
+	enact_main_region_Offline_r1_ConnectToAccesspoint(handle);
 	handle->stateConfVector[0] = MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint;
 }
 
@@ -630,6 +1020,13 @@ static void enseq_main_region_default(MqttClientStatemachine* handle)
 {
 	/* 'default' enter sequence for region main region */
 	react_main_region__entry_Default(handle);
+}
+
+/* 'default' enter sequence for region r1 */
+static void enseq_main_region_Undefined_r1_default(MqttClientStatemachine* handle)
+{
+	/* 'default' enter sequence for region r1 */
+	react_main_region_Undefined_r1__entry_Default(handle);
 }
 
 /* 'default' enter sequence for region r1 */
@@ -653,6 +1050,29 @@ static void enseq_main_region_Offline_r1_WifiConnectionLost(MqttClientStatemachi
 	react_main_region_Offline_r1_WifiConnectionLost(handle);
 }
 
+/* Default exit sequence for state Undefined */
+static void exseq_main_region_Undefined(MqttClientStatemachine* handle)
+{
+	/* Default exit sequence for state Undefined */
+	exseq_main_region_Undefined_r1(handle);
+}
+
+/* Default exit sequence for state Entry */
+static void exseq_main_region_Undefined_r1_Entry(MqttClientStatemachine* handle)
+{
+	/* Default exit sequence for state Entry */
+	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Undefined_r1_Entry(handle);
+}
+
+/* Default exit sequence for state ResetModule */
+static void exseq_main_region_Undefined_r1_ResetModule(MqttClientStatemachine* handle)
+{
+	/* Default exit sequence for state ResetModule */
+	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Undefined_r1_ResetModule(handle);
+}
+
 /* Default exit sequence for state Online */
 static void exseq_main_region_Online(MqttClientStatemachine* handle)
 {
@@ -665,12 +1085,13 @@ static void exseq_main_region_Online_r1_ConnectToBroker(MqttClientStatemachine* 
 {
 	/* Default exit sequence for state ConnectToBroker */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Online_r1_ConnectToBroker(handle);
 }
 
-/* Default exit sequence for state Ready */
-static void exseq_main_region_Online_r1_Ready(MqttClientStatemachine* handle)
+/* Default exit sequence for state Entry */
+static void exseq_main_region_Online_r1_Entry(MqttClientStatemachine* handle)
 {
-	/* Default exit sequence for state Ready */
+	/* Default exit sequence for state Entry */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
 }
 
@@ -679,6 +1100,7 @@ static void exseq_main_region_Online_r1_PublishTopic(MqttClientStatemachine* han
 {
 	/* Default exit sequence for state PublishTopic */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Online_r1_PublishTopic(handle);
 }
 
 /* Default exit sequence for state Wait */
@@ -687,13 +1109,6 @@ static void exseq_main_region_Online_r1_Wait(MqttClientStatemachine* handle)
 	/* Default exit sequence for state Wait */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
 	exact_main_region_Online_r1_Wait(handle);
-}
-
-/* Default exit sequence for state DisconnectFromBroker */
-static void exseq_main_region_Online_r1_DisconnectFromBroker(MqttClientStatemachine* handle)
-{
-	/* Default exit sequence for state DisconnectFromBroker */
-	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
 }
 
 /* Default exit sequence for state Offline */
@@ -708,14 +1123,15 @@ static void exseq_main_region_Offline_r1_SetTopic(MqttClientStatemachine* handle
 {
 	/* Default exit sequence for state SetTopic */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Offline_r1_SetTopic(handle);
 }
 
-/* Default exit sequence for state Ready */
-static void exseq_main_region_Offline_r1_Ready(MqttClientStatemachine* handle)
+/* Default exit sequence for state Entry */
+static void exseq_main_region_Offline_r1_Entry(MqttClientStatemachine* handle)
 {
-	/* Default exit sequence for state Ready */
+	/* Default exit sequence for state Entry */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
-	exact_main_region_Offline_r1_Ready(handle);
+	exact_main_region_Offline_r1_Entry(handle);
 }
 
 /* Default exit sequence for state SetStationMode */
@@ -723,6 +1139,7 @@ static void exseq_main_region_Offline_r1_SetStationMode(MqttClientStatemachine* 
 {
 	/* Default exit sequence for state SetStationMode */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Offline_r1_SetStationMode(handle);
 }
 
 /* Default exit sequence for state ConfigureMqtt */
@@ -730,13 +1147,15 @@ static void exseq_main_region_Offline_r1_ConfigureMqtt(MqttClientStatemachine* h
 {
 	/* Default exit sequence for state ConfigureMqtt */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Offline_r1_ConfigureMqtt(handle);
 }
 
-/* Default exit sequence for state ConfigureDhcp */
-static void exseq_main_region_Offline_r1_ConfigureDhcp(MqttClientStatemachine* handle)
+/* Default exit sequence for state EnableDhcp */
+static void exseq_main_region_Offline_r1_EnableDhcp(MqttClientStatemachine* handle)
 {
-	/* Default exit sequence for state ConfigureDhcp */
+	/* Default exit sequence for state EnableDhcp */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Offline_r1_EnableDhcp(handle);
 }
 
 /* Default exit sequence for state ConnectToAccesspoint */
@@ -744,6 +1163,7 @@ static void exseq_main_region_Offline_r1_ConnectToAccesspoint(MqttClientStatemac
 {
 	/* Default exit sequence for state ConnectToAccesspoint */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
+	exact_main_region_Offline_r1_ConnectToAccesspoint(handle);
 }
 
 /* Default exit sequence for region main region */
@@ -753,14 +1173,24 @@ static void exseq_main_region(MqttClientStatemachine* handle)
 	/* Handle exit of all possible states (of MqttClientStatemachine.main_region) at position 0... */
 	switch(handle->stateConfVector[ 0 ])
 	{
+		case MqttClientStatemachine_main_region_Undefined_r1_Entry :
+		{
+			exseq_main_region_Undefined_r1_Entry(handle);
+			break;
+		}
+		case MqttClientStatemachine_main_region_Undefined_r1_ResetModule :
+		{
+			exseq_main_region_Undefined_r1_ResetModule(handle);
+			break;
+		}
 		case MqttClientStatemachine_main_region_Online_r1_ConnectToBroker :
 		{
 			exseq_main_region_Online_r1_ConnectToBroker(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Online_r1_Ready :
+		case MqttClientStatemachine_main_region_Online_r1_Entry :
 		{
-			exseq_main_region_Online_r1_Ready(handle);
+			exseq_main_region_Online_r1_Entry(handle);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Online_r1_PublishTopic :
@@ -773,19 +1203,14 @@ static void exseq_main_region(MqttClientStatemachine* handle)
 			exseq_main_region_Online_r1_Wait(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker :
-		{
-			exseq_main_region_Online_r1_DisconnectFromBroker(handle);
-			break;
-		}
 		case MqttClientStatemachine_main_region_Offline_r1_SetTopic :
 		{
 			exseq_main_region_Offline_r1_SetTopic(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Offline_r1_Ready :
+		case MqttClientStatemachine_main_region_Offline_r1_Entry :
 		{
-			exseq_main_region_Offline_r1_Ready(handle);
+			exseq_main_region_Offline_r1_Entry(handle);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Offline_r1_SetStationMode :
@@ -798,14 +1223,35 @@ static void exseq_main_region(MqttClientStatemachine* handle)
 			exseq_main_region_Offline_r1_ConfigureMqtt(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp :
+		case MqttClientStatemachine_main_region_Offline_r1_EnableDhcp :
 		{
-			exseq_main_region_Offline_r1_ConfigureDhcp(handle);
+			exseq_main_region_Offline_r1_EnableDhcp(handle);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint :
 		{
 			exseq_main_region_Offline_r1_ConnectToAccesspoint(handle);
+			break;
+		}
+		default: break;
+	}
+}
+
+/* Default exit sequence for region r1 */
+static void exseq_main_region_Undefined_r1(MqttClientStatemachine* handle)
+{
+	/* Default exit sequence for region r1 */
+	/* Handle exit of all possible states (of MqttClientStatemachine.main_region.Undefined.r1) at position 0... */
+	switch(handle->stateConfVector[ 0 ])
+	{
+		case MqttClientStatemachine_main_region_Undefined_r1_Entry :
+		{
+			exseq_main_region_Undefined_r1_Entry(handle);
+			break;
+		}
+		case MqttClientStatemachine_main_region_Undefined_r1_ResetModule :
+		{
+			exseq_main_region_Undefined_r1_ResetModule(handle);
 			break;
 		}
 		default: break;
@@ -824,9 +1270,9 @@ static void exseq_main_region_Online_r1(MqttClientStatemachine* handle)
 			exseq_main_region_Online_r1_ConnectToBroker(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Online_r1_Ready :
+		case MqttClientStatemachine_main_region_Online_r1_Entry :
 		{
-			exseq_main_region_Online_r1_Ready(handle);
+			exseq_main_region_Online_r1_Entry(handle);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Online_r1_PublishTopic :
@@ -837,11 +1283,6 @@ static void exseq_main_region_Online_r1(MqttClientStatemachine* handle)
 		case MqttClientStatemachine_main_region_Online_r1_Wait :
 		{
 			exseq_main_region_Online_r1_Wait(handle);
-			break;
-		}
-		case MqttClientStatemachine_main_region_Online_r1_DisconnectFromBroker :
-		{
-			exseq_main_region_Online_r1_DisconnectFromBroker(handle);
 			break;
 		}
 		default: break;
@@ -860,9 +1301,9 @@ static void exseq_main_region_Offline_r1(MqttClientStatemachine* handle)
 			exseq_main_region_Offline_r1_SetTopic(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Offline_r1_Ready :
+		case MqttClientStatemachine_main_region_Offline_r1_Entry :
 		{
-			exseq_main_region_Offline_r1_Ready(handle);
+			exseq_main_region_Offline_r1_Entry(handle);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Offline_r1_SetStationMode :
@@ -875,9 +1316,9 @@ static void exseq_main_region_Offline_r1(MqttClientStatemachine* handle)
 			exseq_main_region_Offline_r1_ConfigureMqtt(handle);
 			break;
 		}
-		case MqttClientStatemachine_main_region_Offline_r1_ConfigureDhcp :
+		case MqttClientStatemachine_main_region_Offline_r1_EnableDhcp :
 		{
-			exseq_main_region_Offline_r1_ConfigureDhcp(handle);
+			exseq_main_region_Offline_r1_EnableDhcp(handle);
 			break;
 		}
 		case MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint :
@@ -889,32 +1330,89 @@ static void exseq_main_region_Offline_r1(MqttClientStatemachine* handle)
 	}
 }
 
-/* Default react sequence for initial entry  */
-static void react_main_region_Online_r1__entry_Default(MqttClientStatemachine* handle)
+/* The reactions of state null. */
+static void react_main_region_Offline_r1__choice_0(MqttClientStatemachine* handle)
 {
-	/* Default react sequence for initial entry  */
-	enseq_main_region_Online_r1_Ready_default(handle);
+	/* The reactions of state null. */
+	effect_main_region_Offline_r1__choice_0_tr0(handle);
 }
 
-/* Default react sequence for initial entry  */
-static void react_main_region_Offline_r1__entry_Default(MqttClientStatemachine* handle)
+/* The reactions of state null. */
+static void react_main_region_Offline_r1__choice_1(MqttClientStatemachine* handle)
 {
-	/* Default react sequence for initial entry  */
-	enseq_main_region_Offline_r1_Ready_default(handle);
+	/* The reactions of state null. */
+	effect_main_region_Offline_r1__choice_1_tr0(handle);
 }
 
-/* Default react sequence for initial entry WifiConnectionLost */
-static void react_main_region_Offline_r1_WifiConnectionLost(MqttClientStatemachine* handle)
+/* The reactions of state null. */
+static void react_main_region_Offline_r1__choice_2(MqttClientStatemachine* handle)
 {
-	/* Default react sequence for initial entry WifiConnectionLost */
-	enseq_main_region_Offline_r1_ConnectToAccesspoint_default(handle);
+	/* The reactions of state null. */
+	effect_main_region_Offline_r1__choice_2_tr0(handle);
+}
+
+/* The reactions of state null. */
+static void react_main_region_Offline_r1__choice_3(MqttClientStatemachine* handle)
+{
+	/* The reactions of state null. */
+	effect_main_region_Offline_r1__choice_3_tr0(handle);
+}
+
+/* The reactions of state null. */
+static void react_main_region_Offline_r1__choice_4(MqttClientStatemachine* handle)
+{
+	/* The reactions of state null. */
+	effect_main_region_Offline_r1__choice_4_tr0(handle);
 }
 
 /* Default react sequence for initial entry  */
 static void react_main_region__entry_Default(MqttClientStatemachine* handle)
 {
 	/* Default react sequence for initial entry  */
-	enseq_main_region_Offline_default(handle);
+	enseq_main_region_Undefined_default(handle);
+}
+
+/* Default react sequence for initial entry  */
+static void react_main_region_Undefined_r1__entry_Default(MqttClientStatemachine* handle)
+{
+	/* Default react sequence for initial entry  */
+	enseq_main_region_Undefined_r1_Entry_default(handle);
+}
+
+/* Default react sequence for initial entry  */
+static void react_main_region_Online_r1__entry_Default(MqttClientStatemachine* handle)
+{
+	/* Default react sequence for initial entry  */
+	enseq_main_region_Online_r1_Entry_default(handle);
+}
+
+/* Default react sequence for initial entry  */
+static void react_main_region_Offline_r1__entry_Default(MqttClientStatemachine* handle)
+{
+	/* Default react sequence for initial entry  */
+	enseq_main_region_Offline_r1_Entry_default(handle);
+}
+
+/* Default react sequence for initial entry WifiConnectionLost */
+static void react_main_region_Offline_r1_WifiConnectionLost(MqttClientStatemachine* handle)
+{
+	/* Default react sequence for initial entry WifiConnectionLost */
+	handle->ifaceWizFi360.wifiFailCounter = 0;
+	enseq_main_region_Offline_r1_ConnectToAccesspoint_default(handle);
+}
+
+/* The reactions of exit ModuleReady. */
+static void react_main_region_Undefined_r1_ModuleReady(MqttClientStatemachine* handle)
+{
+	/* The reactions of exit ModuleReady. */
+	effect_main_region_Undefined_tr0(handle);
+}
+
+/* The reactions of exit ResetModule. */
+static void react_main_region_Online_r1_ResetModule(MqttClientStatemachine* handle)
+{
+	/* The reactions of exit ResetModule. */
+	effect_main_region_Online_tr1(handle);
 }
 
 /* The reactions of exit WifiConnectionEstablished. */
@@ -924,12 +1422,84 @@ static void react_main_region_Offline_r1_WifiConnectionEstablished(MqttClientSta
 	effect_main_region_Offline_tr0(handle);
 }
 
+/* The reactions of exit ResetModule. */
+static void react_main_region_Offline_r1_ResetModule(MqttClientStatemachine* handle)
+{
+	/* The reactions of exit ResetModule. */
+	effect_main_region_Offline_tr1(handle);
+}
+
 
 static sc_integer react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
 {
 	/* State machine reactions. */
 	SC_UNUSED(handle);
 	return transitioned_before;
+}
+
+static sc_integer main_region_Undefined_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
+{
+	/* The reactions of state Undefined. */
+ 			sc_integer transitioned_after = transitioned_before;
+	if ((transitioned_after) < (0))
+	{ 
+	} /* If no transition was taken then execute local reactions */
+	if ((transitioned_after) == (transitioned_before))
+	{ 
+		transitioned_after = react(handle, transitioned_before);
+	} return transitioned_after;
+}
+
+static sc_integer main_region_Undefined_r1_Entry_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
+{
+	/* The reactions of state Entry. */
+ 			sc_integer transitioned_after = transitioned_before;
+	if ((transitioned_after) < (0))
+	{ 
+		if (handle->current.timeEvents.MqttClientStatemachine_main_region_Undefined_r1_Entry_time_event_0_raised == bool_true)
+		{ 
+			exseq_main_region_Undefined_r1_Entry(handle);
+			sc_observable_next(&handle->ifaceWizFi360.resetModule);
+			handle->ifaceWizFi360.resetModule_raised = bool_true;
+			enseq_main_region_Undefined_r1_ResetModule_default(handle);
+			main_region_Undefined_react(handle, 0);
+			transitioned_after = 0;
+		} 
+	} /* If no transition was taken then execute local reactions */
+	if ((transitioned_after) == (transitioned_before))
+	{ 
+		transitioned_after = main_region_Undefined_react(handle, transitioned_before);
+	} return transitioned_after;
+}
+
+static sc_integer main_region_Undefined_r1_ResetModule_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
+{
+	/* The reactions of state ResetModule. */
+ 			sc_integer transitioned_after = transitioned_before;
+	if ((transitioned_after) < (0))
+	{ 
+		if (handle->current.ifaceWizFi360.ready_raised == bool_true)
+		{ 
+			exseq_main_region_Undefined_r1_ResetModule(handle);
+			react_main_region_Undefined_r1_ModuleReady(handle);
+			transitioned_after = 0;
+		}  else
+		{
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Undefined_r1_ResetModule_time_event_0_raised == bool_true)
+			{ 
+				exseq_main_region_Undefined_r1_ResetModule(handle);
+				sc_observable_next(&handle->ifaceWizFi360.resetModuleFailed);
+				handle->ifaceWizFi360.resetModuleFailed_raised = bool_true;
+				enseq_main_region_Undefined_r1_Entry_default(handle);
+				main_region_Undefined_react(handle, 0);
+				transitioned_after = 0;
+			} 
+		}
+	} /* If no transition was taken then execute local reactions */
+	if ((transitioned_after) == (transitioned_before))
+	{ 
+		transitioned_after = main_region_Undefined_react(handle, transitioned_before);
+	} return transitioned_after;
 }
 
 static sc_integer main_region_Online_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
@@ -966,7 +1536,17 @@ static sc_integer main_region_Online_r1_ConnectToBroker_react(MqttClientStatemac
 			enseq_main_region_Online_r1_PublishTopic_default(handle);
 			main_region_Online_react(handle, 0);
 			transitioned_after = 0;
-		} 
+		}  else
+		{
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Online_r1_ConnectToBroker_time_event_0_raised == bool_true)
+			{ 
+				exseq_main_region_Online_r1_ConnectToBroker(handle);
+				sc_observable_next(&handle->ifaceWizFi360.connectToBrokerFailed);
+				handle->ifaceWizFi360.connectToBrokerFailed_raised = bool_true;
+				react_main_region_Online_r1_ResetModule(handle);
+				transitioned_after = 0;
+			} 
+		}
 	} /* If no transition was taken then execute local reactions */
 	if ((transitioned_after) == (transitioned_before))
 	{ 
@@ -974,13 +1554,13 @@ static sc_integer main_region_Online_r1_ConnectToBroker_react(MqttClientStatemac
 	} return transitioned_after;
 }
 
-static sc_integer main_region_Online_r1_Ready_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
+static sc_integer main_region_Online_r1_Entry_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
 {
-	/* The reactions of state Ready. */
+	/* The reactions of state Entry. */
  			sc_integer transitioned_after = transitioned_before;
 	if ((transitioned_after) < (0))
 	{ 
-		exseq_main_region_Online_r1_Ready(handle);
+		exseq_main_region_Online_r1_Entry(handle);
 		sc_observable_next(&handle->ifaceWizFi360.connectToBroker);
 		handle->ifaceWizFi360.connectToBroker_raised = bool_true;
 		enseq_main_region_Online_r1_ConnectToBroker_default(handle);
@@ -1007,13 +1587,12 @@ static sc_integer main_region_Online_r1_PublishTopic_react(MqttClientStatemachin
 			transitioned_after = 0;
 		}  else
 		{
-			if (handle->current.ifaceWizFi360.error_raised == bool_true)
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Online_r1_PublishTopic_time_event_0_raised == bool_true)
 			{ 
 				exseq_main_region_Online_r1_PublishTopic(handle);
-				sc_observable_next(&handle->ifaceWizFi360.disconnectFromBroker);
-				handle->ifaceWizFi360.disconnectFromBroker_raised = bool_true;
-				enseq_main_region_Online_r1_DisconnectFromBroker_default(handle);
-				main_region_Online_react(handle, 0);
+				sc_observable_next(&handle->ifaceWizFi360.publishTopicFailed);
+				handle->ifaceWizFi360.publishTopicFailed_raised = bool_true;
+				react_main_region_Online_r1_ResetModule(handle);
 				transitioned_after = 0;
 			} 
 		}
@@ -1036,28 +1615,6 @@ static sc_integer main_region_Online_r1_Wait_react(MqttClientStatemachine* handl
 			sc_observable_next(&handle->ifaceWizFi360.publishTopic);
 			handle->ifaceWizFi360.publishTopic_raised = bool_true;
 			enseq_main_region_Online_r1_PublishTopic_default(handle);
-			main_region_Online_react(handle, 0);
-			transitioned_after = 0;
-		} 
-	} /* If no transition was taken then execute local reactions */
-	if ((transitioned_after) == (transitioned_before))
-	{ 
-		transitioned_after = main_region_Online_react(handle, transitioned_before);
-	} return transitioned_after;
-}
-
-static sc_integer main_region_Online_r1_DisconnectFromBroker_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
-{
-	/* The reactions of state DisconnectFromBroker. */
- 			sc_integer transitioned_after = transitioned_before;
-	if ((transitioned_after) < (0))
-	{ 
-		if (handle->current.ifaceWizFi360.ok_raised == bool_true)
-		{ 
-			exseq_main_region_Online_r1_DisconnectFromBroker(handle);
-			sc_observable_next(&handle->ifaceWizFi360.connectToBroker);
-			handle->ifaceWizFi360.connectToBroker_raised = bool_true;
-			enseq_main_region_Online_r1_ConnectToBroker_default(handle);
 			main_region_Online_react(handle, 0);
 			transitioned_after = 0;
 		} 
@@ -1092,10 +1649,21 @@ static sc_integer main_region_Offline_r1_SetTopic_react(MqttClientStatemachine* 
 			exseq_main_region_Offline_r1_SetTopic(handle);
 			sc_observable_next(&handle->ifaceWizFi360.connectToAccessPoint);
 			handle->ifaceWizFi360.connectToAccessPoint_raised = bool_true;
+			handle->ifaceWizFi360.wifiFailCounter = 0;
 			enseq_main_region_Offline_r1_ConnectToAccesspoint_default(handle);
 			main_region_Offline_react(handle, 0);
 			transitioned_after = 0;
-		} 
+		}  else
+		{
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_SetTopic_time_event_0_raised == bool_true)
+			{ 
+				exseq_main_region_Offline_r1_SetTopic(handle);
+				sc_observable_next(&handle->ifaceWizFi360.setTopicFailed);
+				handle->ifaceWizFi360.setTopicFailed_raised = bool_true;
+				react_main_region_Offline_r1__choice_3(handle);
+				transitioned_after = 0;
+			} 
+		}
 	} /* If no transition was taken then execute local reactions */
 	if ((transitioned_after) == (transitioned_before))
 	{ 
@@ -1103,15 +1671,15 @@ static sc_integer main_region_Offline_r1_SetTopic_react(MqttClientStatemachine* 
 	} return transitioned_after;
 }
 
-static sc_integer main_region_Offline_r1_Ready_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
+static sc_integer main_region_Offline_r1_Entry_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
 {
-	/* The reactions of state Ready. */
+	/* The reactions of state Entry. */
  			sc_integer transitioned_after = transitioned_before;
 	if ((transitioned_after) < (0))
 	{ 
-		if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_Ready_time_event_0_raised == bool_true)
+		if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_Entry_time_event_0_raised == bool_true)
 		{ 
-			exseq_main_region_Offline_r1_Ready(handle);
+			exseq_main_region_Offline_r1_Entry(handle);
 			sc_observable_next(&handle->ifaceWizFi360.setStationMode);
 			handle->ifaceWizFi360.setStationMode_raised = bool_true;
 			enseq_main_region_Offline_r1_SetStationMode_default(handle);
@@ -1134,12 +1702,22 @@ static sc_integer main_region_Offline_r1_SetStationMode_react(MqttClientStatemac
 		if (handle->current.ifaceWizFi360.ok_raised == bool_true)
 		{ 
 			exseq_main_region_Offline_r1_SetStationMode(handle);
-			sc_observable_next(&handle->ifaceWizFi360.configureDhcp);
-			handle->ifaceWizFi360.configureDhcp_raised = bool_true;
-			enseq_main_region_Offline_r1_ConfigureDhcp_default(handle);
+			sc_observable_next(&handle->ifaceWizFi360.enableDhcp);
+			handle->ifaceWizFi360.enableDhcp_raised = bool_true;
+			enseq_main_region_Offline_r1_EnableDhcp_default(handle);
 			main_region_Offline_react(handle, 0);
 			transitioned_after = 0;
-		} 
+		}  else
+		{
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_SetStationMode_time_event_0_raised == bool_true)
+			{ 
+				exseq_main_region_Offline_r1_SetStationMode(handle);
+				sc_observable_next(&handle->ifaceWizFi360.setStationModeFailed);
+				handle->ifaceWizFi360.setStationModeFailed_raised = bool_true;
+				react_main_region_Offline_r1__choice_0(handle);
+				transitioned_after = 0;
+			} 
+		}
 	} /* If no transition was taken then execute local reactions */
 	if ((transitioned_after) == (transitioned_before))
 	{ 
@@ -1161,7 +1739,17 @@ static sc_integer main_region_Offline_r1_ConfigureMqtt_react(MqttClientStatemach
 			enseq_main_region_Offline_r1_SetTopic_default(handle);
 			main_region_Offline_react(handle, 0);
 			transitioned_after = 0;
-		} 
+		}  else
+		{
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_ConfigureMqtt_time_event_0_raised == bool_true)
+			{ 
+				exseq_main_region_Offline_r1_ConfigureMqtt(handle);
+				sc_observable_next(&handle->ifaceWizFi360.configureMqttFailed);
+				handle->ifaceWizFi360.configureMqttFailed_raised = bool_true;
+				react_main_region_Offline_r1__choice_2(handle);
+				transitioned_after = 0;
+			} 
+		}
 	} /* If no transition was taken then execute local reactions */
 	if ((transitioned_after) == (transitioned_before))
 	{ 
@@ -1169,21 +1757,31 @@ static sc_integer main_region_Offline_r1_ConfigureMqtt_react(MqttClientStatemach
 	} return transitioned_after;
 }
 
-static sc_integer main_region_Offline_r1_ConfigureDhcp_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
+static sc_integer main_region_Offline_r1_EnableDhcp_react(MqttClientStatemachine* handle, const sc_integer transitioned_before)
 {
-	/* The reactions of state ConfigureDhcp. */
+	/* The reactions of state EnableDhcp. */
  			sc_integer transitioned_after = transitioned_before;
 	if ((transitioned_after) < (0))
 	{ 
 		if (handle->current.ifaceWizFi360.ok_raised == bool_true)
 		{ 
-			exseq_main_region_Offline_r1_ConfigureDhcp(handle);
+			exseq_main_region_Offline_r1_EnableDhcp(handle);
 			sc_observable_next(&handle->ifaceWizFi360.configureMqtt);
 			handle->ifaceWizFi360.configureMqtt_raised = bool_true;
 			enseq_main_region_Offline_r1_ConfigureMqtt_default(handle);
 			main_region_Offline_react(handle, 0);
 			transitioned_after = 0;
-		} 
+		}  else
+		{
+			if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_EnableDhcp_time_event_0_raised == bool_true)
+			{ 
+				exseq_main_region_Offline_r1_EnableDhcp(handle);
+				sc_observable_next(&handle->ifaceWizFi360.enableDhcpFailed);
+				handle->ifaceWizFi360.enableDhcpFailed_raised = bool_true;
+				react_main_region_Offline_r1__choice_1(handle);
+				transitioned_after = 0;
+			} 
+		}
 	} /* If no transition was taken then execute local reactions */
 	if ((transitioned_after) == (transitioned_before))
 	{ 
@@ -1209,10 +1807,27 @@ static sc_integer main_region_Offline_r1_ConnectToAccesspoint_react(MqttClientSt
 				exseq_main_region_Offline_r1_ConnectToAccesspoint(handle);
 				sc_observable_next(&handle->ifaceWizFi360.connectToAccessPoint);
 				handle->ifaceWizFi360.connectToAccessPoint_raised = bool_true;
+				handle->ifaceWizFi360.wifiFailCounter += 1;
 				enseq_main_region_Offline_r1_ConnectToAccesspoint_default(handle);
 				main_region_Offline_react(handle, 0);
 				transitioned_after = 0;
-			} 
+			}  else
+			{
+				if ((handle->ifaceWizFi360.wifiFailCounter) == (3))
+				{ 
+					exseq_main_region_Offline_r1_ConnectToAccesspoint(handle);
+					react_main_region_Offline_r1__choice_4(handle);
+					transitioned_after = 0;
+				}  else
+				{
+					if (handle->current.timeEvents.MqttClientStatemachine_main_region_Offline_r1_ConnectToAccesspoint_time_event_0_raised == bool_true)
+					{ 
+						exseq_main_region_Offline_r1_ConnectToAccesspoint(handle);
+						react_main_region_Offline_r1__choice_4(handle);
+						transitioned_after = 0;
+					} 
+				}
+			}
 		}
 	} /* If no transition was taken then execute local reactions */
 	if ((transitioned_after) == (transitioned_before))

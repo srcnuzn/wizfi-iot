@@ -18,7 +18,7 @@
 
 /* Defines ---------------------------------------------------------*/
 
-#define WIZFI360_MAX_CMD_LEN 				128
+#define WIZFI360_MAX_CMD_LEN 				256
 #define WIZFI360_MAX_AP_PWD_LEN 			 64
 #define WIZFI360_MAX_AP_SSID_LEN 			 32
 #define WIZFI360_MAX_MQQT_USERNAME_LEN		 50
@@ -46,6 +46,13 @@
 #define WIZFI360_TAG_STA_CONNECTED			"+STA_CONNECTED:"
 #define WIZFI360_TAG_DIST_STA_IP			"+DIST_STA_IP:"
 #define WIZFI360_TAG_STA_DISCONNECTED		"+STA_DISCONNECTED:"
+
+/*
+ * Choose which WizFi Board is used
+ */
+#define WIZFI360_EVB_MINI
+// #define WIZFI360_EVB_SHIELD
+
 
 
 /*********************************************************************************************/
@@ -309,6 +316,12 @@ void WIZFI360_Initialize();
 
 void WIZFI360_Process();
 
+void WIZFI360_Reset();
+
+void WIZFI360_ResetHard();
+
+void WIZFI360_ResetSoft();
+
 WIZFI360_State WIZFI360_GetState();
 
 WIZFI360_WifiState WIZFI360_GetWifiState();
@@ -340,6 +353,8 @@ void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
 void WIZFI360_WifiConnectedCallback();
 
 void WIZFI360_WifiConnectFailedCallback();
+
+void WIZFI360_ModuleReadyCallback();
 
 /*********************************************************************************************/
 
