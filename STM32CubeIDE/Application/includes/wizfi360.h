@@ -9,21 +9,20 @@
 #define INCLUDES_WIZFI360_H_
 
 /*********************************************************************************************/
-
-/* Includes ---------------------------------------------------------*/
+/* Includes ---------------------------------------------------------------------------------*/
 
 #include <stdint.h>
+#include "./wizfi360_opts.h"
+#include "../thirdparty/ringbuffer.h"
 
 /*********************************************************************************************/
+/* Defines ----------------------------------------------------------------------------------*/
 
-/* Defines ---------------------------------------------------------*/
-
-#define WIZFI360_MAX_CMD_LEN 				256
 #define WIZFI360_MAX_AP_PWD_LEN 			 64
 #define WIZFI360_MAX_AP_SSID_LEN 			 32
-#define WIZFI360_MAX_MQQT_USERNAME_LEN		 50
-#define WIZFI360_MAX_MQQT_PWD_LEN			 50
-#define WIZFI360_MAX_MQQT_CLIENTID_LEN		 50
+#define WIZFI360_MAX_MQTT_USERNAME_LEN		 50
+#define WIZFI360_MAX_MQTT_PWD_LEN			 50
+#define WIZFI360_MAX_MQTT_CLIENTID_LEN		 50
 
 #define WIZFI360_NUM_TAGS 	18
 
@@ -47,60 +46,9 @@
 #define WIZFI360_TAG_DIST_STA_IP			"+DIST_STA_IP:"
 #define WIZFI360_TAG_STA_DISCONNECTED		"+STA_DISCONNECTED:"
 
-/*
- * Choose which WizFi Board is used
- */
-#define WIZFI360_EVB_MINI
-// #define WIZFI360_EVB_SHIELD
-
-
 
 /*********************************************************************************************/
-
-/* Macro definitions ---------------------------------------------------------*/
-
-/** @brief  Checks if the tag id is a response tag.
-  * @note	Response tags are expected, when AT command is evaluated
-  * 		by wizfi360 module
-  * @note	WIZFI360_TAG_ID_FAIL can also be received as message,
-  * 		when connection to AP is lost (--> not as AT response)
-  * @param  __TAG_ID__ The tag id to check for.
-  * @retval TRUE if response tag, else false
-  */
-#define __WIZFI360_IS_RESPONSE_TAG(__TAG_ID__)        			\
-	(															\
-		(__TAG_ID__ == WIZFI360_TAG_ID_ERROR)				||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_ALREADY_CONNECTED)	||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_SEND_FAIL)			||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_OK)					||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_SEND_OK)				||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_FAIL)					\
-	)
-
-/** @brief  Checks if the tag id is a message tag.
-  * @note	Message tags can be received at any time.
-  * @param  __TAG_ID__ The tag id to check for.
-  * @retval TRUE if message tag, else false
-  */
-#define __WIZFI360_IS_MESSAGE_TAG(__TAG_ID__)        			\
-	(															\
-		(__TAG_ID__ == WIZFI360_TAG_ID_READY)				||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_WIFI_CONNECTED)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_WIFI_GOT_IP)			||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_WIFI_DISCONNECT)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_BUSY_SENDING)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_BUSY_PROCESSING)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_LINK_ID_CONNECT)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_LINK_ID_CLOSED)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_STA_CONNECTED)		||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_DIST_STA_IP)			||	\
-		(__TAG_ID__ == WIZFI360_TAG_ID_STA_DISCONNECTED)		\
-	)
-
-
-/*********************************************************************************************/
-
-/* Type definitions ---------------------------------------------------------*/
+/* Type definitions -------------------------------------------------------------------------*/
 
 /**
   * @brief 	WIZFI360 tag id definition
@@ -320,41 +268,36 @@ void WIZFI360_Reset();
 
 void WIZFI360_ResetHard();
 
-void WIZFI360_ResetSoft();
+void WIZFI360_AT_ResetModule();
 
 WIZFI360_State WIZFI360_GetState();
 
 WIZFI360_WifiState WIZFI360_GetWifiState();
 
-void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* password);
+void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* password);
 
-void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode);
+void WIZFI360_AT_ConfigureMode(WIZFI360_ModeTypeDef mode);
 
-void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
+void WIZFI360_AT_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
 
-void WIZFI360_GetSSLCertificate();
+void WIZFI360_AT_GetSSLCertificate();
 
-void WIZFI360_SetSSLCertificate();
+void WIZFI360_AT_SetSSLCertificate();
 
-void WIZFI360_MqttInit(const char* userName, const char*  pwd,
+void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 		const char* clientId, uint16_t aliveTime );
 
-void WIZFI360_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
+void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 		const char* subTopic2, const char* subTopic3);
 
-void WIZFI360_MqttConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
+void WIZFI360_AT_MqttConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
 		uint16_t mqttBrokerPort);
 
-void WIZFI360_MqttPublishMessage(const char* message);
+void WIZFI360_AT_MqttPublishMessage(const char* message);
 
-void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
-		WIZFI360_ResponseTypeDef response);
+void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size);
 
-void WIZFI360_WifiConnectedCallback();
-
-void WIZFI360_WifiConnectFailedCallback();
-
-void WIZFI360_ModuleReadyCallback();
+void WIZFI360_UART_ByteReceived(const char data);
 
 /*********************************************************************************************/
 

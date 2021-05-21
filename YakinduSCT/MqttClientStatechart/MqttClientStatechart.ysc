@@ -461,7 +461,7 @@
         <layoutConstraint xsi:type="notation:Bounds" xmi:id="_ERd_PLmKEeueBuwdVr1qTA"/>
       </children>
       <styles xsi:type="notation:ShapeStyle" xmi:id="_ERd_PbmKEeueBuwdVr1qTA" fontName="Verdana" fillColor="16448250" lineColor="12632256"/>
-      <layoutConstraint xsi:type="notation:Bounds" xmi:id="_ERd_PrmKEeueBuwdVr1qTA" x="40" y="34" width="797" height="487"/>
+      <layoutConstraint xsi:type="notation:Bounds" xmi:id="_ERd_PrmKEeueBuwdVr1qTA" x="22" y="21" width="797" height="487"/>
     </children>
     <styles xsi:type="notation:BooleanValueStyle" xmi:id="_ERd_P7mKEeueBuwdVr1qTA" name="inlineDefinitionSection"/>
     <styles xsi:type="notation:DiagramStyle" xmi:id="_ERd_QLmKEeueBuwdVr1qTA"/>

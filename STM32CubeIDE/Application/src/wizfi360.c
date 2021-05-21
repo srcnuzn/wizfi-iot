@@ -11,10 +11,11 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "../includes/wizfi360_uart.h"
 #include "../includes/wizfi360.h"
+#include "../includes/wizfi360_required.h"
 
 /*********************************************************************************************/
+/* Required functions to be implemented by user ---------------------------------------------*/
 
 /* Private constants ----------------------------------------------------------*/
 
@@ -49,11 +50,11 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 
 /* Private function prototypes -----------------------------------------------*/
 
-static void ScanUartReceiveBuffer(uint32_t bytesToScan);
+static void ResetDataStructure();
 static void ScanBufferForTags(uint8_t tmpChar, int i);
 static void ScanBufferForEcho(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
-static void ErrorHandler();
+
 
 // TODO Scan Buffer for MQTT topics
 // TODO Create MQTT Message Receive callback
@@ -70,6 +71,8 @@ static void ErrorHandler();
  */
 static WIZFI360_HandlerTypedef wizfi360;
 
+static ring_buffer_t rbuffer;
+
 
 /*********************************************************************************************/
 
@@ -82,13 +85,8 @@ static WIZFI360_HandlerTypedef wizfi360;
   */
 void WIZFI360_Initialize()
 {
-	WIZFI360_UART_Initialize();
-
-	// TODO: DO PROPER RESET
-	wizfi360.EchoEnabled = 1;
-	wizfi360.ExpectingResponse = 0;
-	wizfi360.Mode = WIZFI360_MODE_STATION;
-	wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
+	// Call user specific function
+	WIZFI360_UART_StartContinousReception();
 }
 
 /**
@@ -99,19 +97,27 @@ void WIZFI360_Initialize()
   */
 void WIZFI360_Process()
 {
-	// TODO: CHECK FOR TIMEOUTS?
-
 	// The amount of received bytes.
-	uint32_t bytesAvailable = WIZFI360_UART_DataAvailable();
+	uint32_t bytesAvailable = ring_buffer_num_items(&rbuffer);
 
-	// If no UART data is available...
-	if (!bytesAvailable)
+	// Go through all bytes in ring buffer...
+	for (int i = 0; i < bytesAvailable; i++)
 	{
-		// Do nothing.
-		return;
-	}
+		// A temporary byte storage
+		char tmpChar;
 
-	ScanUartReceiveBuffer(bytesAvailable);
+		// Peek the next byte from ring buffer
+		ring_buffer_peek(&rbuffer, &tmpChar, i);
+
+		// Check if ring buffer contains AT command echo
+		ScanBufferForEcho(tmpChar, i+1);
+
+		// Check if ring buffer contains mqtt message
+		// TODO: ScanBufferForMqqtMessages();
+
+		// Check if ring buffer contains wizfi360 tags
+		ScanBufferForTags(tmpChar, i+1);
+	}
 }
 
 /**
@@ -124,7 +130,7 @@ void WIZFI360_Reset()
 	#ifdef WIZFI360_EVB_MINI
 		WIZFI360_ResetHard();
 	#elif WIZFI360_EVB_SHIELD
-		WIZFI360_ResetSoft();
+		WIZFI360_AT_ResetModule();
 	#endif
 }
 
@@ -135,30 +141,15 @@ void WIZFI360_Reset()
  */
 void WIZFI360_ResetHard()
 {
+	WIZFI360_PreResetHard();
 
-	HAL_UART_Abort(&huart2);
-	HAL_UART_AbortReceive(&huart2);
+	WIZFI360_WriteResetPinLow();
+	WIZFI360_Delay(1);
+	WIZFI360_WriteResetPinHigh();
+	WIZFI360_Delay(10);
 
-	(&huart2)->Instance->CR1 &= ~USART_CR1_RE;
-
-
-	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_RESET);
-	HAL_Delay(1);
-	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_SET);
-	HAL_Delay(10);
-
-	(&huart2)->Instance->CR1 |= USART_CR1_RE;
-
-	WIZFI360_Initialize();
+	WIZFI360_PostResetHard();
 }
-
-extern uint32_t uart_error_ctr;
-
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-	uart_error_ctr++;
-}
-
 
 
 /**
@@ -166,7 +157,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
  * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
  * @retval	None
  */
-void WIZFI360_ResetSoft()
+void WIZFI360_AT_ResetModule()
 {
 
 }
@@ -203,19 +194,17 @@ WIZFI360_WifiState WIZFI360_GetWifiState()
  * @param	pwd    string parameter, the password of the target AP, MAX: 64-byte ASCII.
  * @retval	None
  */
-void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
+void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 	// If the module is not in station mode...
 	if (wizfi360.Mode != WIZFI360_MODE_STATION)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the ssid
@@ -225,7 +214,6 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	if (ssidLength > WIZFI360_MAX_AP_SSID_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the password
@@ -235,7 +223,6 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	if (pwdLength > WIZFI360_MAX_AP_PWD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the command (example: AT+CWJAP_CUR="ssid","pwd"<CR><LF>)
@@ -250,7 +237,6 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -273,8 +259,15 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -293,13 +286,12 @@ void WIZFI360_ConnectToAccessPoint(const char* ssid, const char* pwd)
  * @param	mode   The mode to be set.
  * @retval	None
  */
-void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode)
+void WIZFI360_AT_ConfigureMode(WIZFI360_ModeTypeDef mode)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the command
@@ -312,7 +304,6 @@ void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode)
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -349,15 +340,20 @@ void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode)
 		default:
 		{
 			// TODO: Error handling
-			ErrorHandler();
 		}
 	}
 
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
+	// Send the command
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
 	// Send the command
 	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
 			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -378,13 +374,12 @@ void WIZFI360_ConfigureMode(WIZFI360_ModeTypeDef mode)
  * @param	dhcp   The DHCP setting (enabled/disbaled)
  * @retval	None
  */
-void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp)
+void WIZFI360_AT_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the command
@@ -399,7 +394,6 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -438,7 +432,6 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 		default:
 		{
 			// TODO: Error handling
-			ErrorHandler();
 		}
 	}
 
@@ -462,16 +455,21 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
 		default:
 		{
 			// TODO: Error handling
-			ErrorHandler();
 		}
 	}
 
 	// Append <CR><LF>
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
+	// Send the command
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
 	// Send the command
 	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
 			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -491,13 +489,12 @@ void WIZFI360_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef 
  * @param	None
  * @retval	None
  */
-void WIZFI360_SetSSLCertificate()
+void WIZFI360_AT_SetSSLCertificate()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// TODO Finish setting SSL cert function
@@ -513,7 +510,6 @@ void WIZFI360_SetSSLCertificate()
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -531,9 +527,15 @@ void WIZFI360_SetSSLCertificate()
 	// Append <CR><LF>
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
+	// Send the command
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
 	// Send the command
 	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
 			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -553,13 +555,12 @@ void WIZFI360_SetSSLCertificate()
  * @param	None
  * @retval	None
  */
-void WIZFI360_GetSSLCertificate()
+void WIZFI360_AT_GetSSLCertificate()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the command
@@ -571,7 +572,6 @@ void WIZFI360_GetSSLCertificate()
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -589,9 +589,15 @@ void WIZFI360_GetSSLCertificate()
 	// Append <CR><LF>
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
+	// Send the command
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
 	// Send the command
 	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
 			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -616,50 +622,45 @@ void WIZFI360_GetSSLCertificate()
  * @param	aliveTime   keep-alive time setting with the broker within the range of 30s~300s.
  * @retval	None
  */
-void WIZFI360_MqttInit(const char* userName, const char*  pwd,
+void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 		const char* clientId, uint16_t aliveTime )
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 	// If the module is not in station mode...
 	if (wizfi360.Mode != WIZFI360_MODE_STATION)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the user name
 	const int userNameLength = strlen(userName);
 
 	// If the userName is too long...
-	if (userNameLength > WIZFI360_MAX_MQQT_USERNAME_LEN)
+	if (userNameLength > WIZFI360_MAX_MQTT_USERNAME_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the mqtt password
 	const int pwdLength  = strlen(pwd);
 
 	// If the password is too long
-	if (pwdLength > WIZFI360_MAX_MQQT_PWD_LEN)
+	if (pwdLength > WIZFI360_MAX_MQTT_PWD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the client id
 	const int clientIdLength = strlen(clientId);
 
 	// If the clientId is too long...
-	if (clientIdLength > WIZFI360_MAX_MQQT_CLIENTID_LEN)
+	if (clientIdLength > WIZFI360_MAX_MQTT_CLIENTID_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Build string from alive time
@@ -683,7 +684,6 @@ void WIZFI360_MqttInit(const char* userName, const char*  pwd,
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -712,8 +712,15 @@ void WIZFI360_MqttInit(const char* userName, const char*  pwd,
 	strcat(wizfi360.CommandBuffer, sAliveTime);
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -738,20 +745,18 @@ void WIZFI360_MqttInit(const char* userName, const char*  pwd,
  * @param	subscribeTopic 	string parameter, The topic subscribed by the WizFi360
  * @retval	None
  */
-void WIZFI360_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
+void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 		const char* subTopic2, const char* subTopic3)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 	// If the module is not in station mode...
 	if (wizfi360.Mode != WIZFI360_MODE_STATION)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// The length of the command (example: AT+MQTTTOPIC="pubTopic","subTopic1","SubTopic2","SubTopic3"<CR><LF>)
@@ -768,7 +773,6 @@ void WIZFI360_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -791,9 +795,15 @@ void WIZFI360_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
+	// Send the command
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
 	// Send the command
 	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
 			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -817,20 +827,18 @@ void WIZFI360_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
  * @param	mqttBrokerPort 	the broker port number
  * @retval	None
  */
-void WIZFI360_MqttConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
+void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
 		const char*  mqttBrokerIP, uint16_t mqttBrokerPort)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 	// If the module is not in station mode...
 	if (wizfi360.Mode != WIZFI360_MODE_STATION)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Build string from alive time
@@ -851,7 +859,6 @@ void WIZFI360_MqttConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -881,7 +888,6 @@ void WIZFI360_MqttConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
 		default:
 		{
 			// TODO: Error handling
-			ErrorHandler();
 		}
 	}
 	strcat(wizfi360.CommandBuffer, ",");
@@ -892,9 +898,15 @@ void WIZFI360_MqttConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
 	strcat(wizfi360.CommandBuffer, sPort);
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
-
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
+#endif
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
 
@@ -916,20 +928,18 @@ void WIZFI360_MqttConnectToBroker(WIZFI360_MqqtAuthModeTypeDef authMode,
  * @param	mqttBrokerPort 	the broker port number
  * @retval	None
  */
-void WIZFI360_MqttPublishMessage(const char* message)
+void WIZFI360_AT_MqttPublishMessage(const char* message)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 	// TODO if is not connected to broker
 	// If the module is not in station mode...
 	if (wizfi360.Mode != WIZFI360_MODE_STATION)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 
@@ -944,7 +954,6 @@ void WIZFI360_MqttPublishMessage(const char* message)
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
 		// TODO: Error handling
-		ErrorHandler();
 	}
 
 	// Write the command id into wizfi360 structure
@@ -963,8 +972,15 @@ void WIZFI360_MqttPublishMessage(const char* message)
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 	// Send the command
-	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer, wizfi360.CommandLength, 10000);
+	WIZFI360_UART_SendNonBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength);
+#else
+	// Send the command
+	WIZFI360_UART_SendBlockingMode((uint8_t*) wizfi360.CommandBuffer,
+			wizfi360.CommandLength, 10000);
+#endif
 
 	// We expect a response for this command.
 	wizfi360.ExpectingResponse = 1;
@@ -977,30 +993,35 @@ void WIZFI360_MqttPublishMessage(const char* message)
 	}
 }
 
+/*
+ * TODO: Comment WIZFI360_UART_BytesReceived
+ */
+void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size)
+{
+	ring_buffer_queue_arr(&rbuffer, data, size);
+}
+
+/*
+ * TODO: Comment WIZFI360_UART_ByteReceived
+ */
+void WIZFI360_UART_ByteReceived(const char data)
+{
+	ring_buffer_queue(&rbuffer, data);
+}
+
 /*********************************************************************************************/
 /* Private functions ---------------------------------------------------------*/
 
-/**
-  * @brief  Scans the received data for certain tags and strings.
-  * @retval none
-  */
-static void ScanUartReceiveBuffer(uint32_t bytesToScan)
+static void ResetDataStructure()
 {
-	// For each byte to be scanned...
-	for (int i = 0; i < bytesToScan; i++)
-	{
-		// A storage for the current byte to be peeked
-		uint8_t tmpChar;
+	/* Initialize ring buffer */
+	ring_buffer_init(&rbuffer);
 
-		// Peek the next byte to be scanned from UART buffer
-		WIZFI360_UART_PeekFromBuffer(&tmpChar, i);
-
-		ScanBufferForEcho(tmpChar, i+1);
-
-		// TODO: ScanBufferForMqqtMessages();
-
-		ScanBufferForTags(tmpChar, i+1);
-	}
+	// TODO: DO PROPER RESET
+	wizfi360.EchoEnabled = 1;
+	wizfi360.ExpectingResponse = 0;
+	wizfi360.Mode = WIZFI360_MODE_STATION;
+	wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
 }
 
 
@@ -1032,7 +1053,7 @@ static void ScanBufferForEcho(uint8_t tmpChar, int i)
 			// A buffer to read the echo into (the length of the echo equals command length)
 			uint8_t echo[wizfi360.CommandLength];
 			// Read the echo from UART buffer
-			WIZFI360_UART_ReadArrayFromBuffer(echo, wizfi360.CommandLength);
+			ring_buffer_dequeue_arr(&rbuffer, (char*)echo, wizfi360.CommandLength);
 			// We do not expect an echo anymore
 			wizfi360.ExpectingEcho = 0;
 			// Reset the counter.
@@ -1110,135 +1131,106 @@ static void ScanBufferForTags(uint8_t tmpChar, int i)
  */
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 {
-	uint8_t buffer[length];
-	WIZFI360_UART_ReadArrayFromBuffer(buffer, length);
+	uint8_t data[length];
+	ring_buffer_dequeue_arr(&rbuffer, (char*)data, length);
 
 	switch(tagId)
 	{
 		// If we received the OK tag...
-		// TODO: handle tags received
 		case WIZFI360_TAG_ID_OK:
 		{
 			wizfi360.ExpectingResponse = 0;
+
+			#ifdef WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
 			WIZFI360_CommandCpltCallback(wizfi360.CommandId,
 					WIZFI360_RESPONSE_OK);
-			ErrorHandler();
+			#endif
+
 			break;
 		}
 		case WIZFI360_TAG_ID_SEND_OK:
 		{
-			ErrorHandler();
 			wizfi360.ExpectingResponse = 0;
 			break;
 		}
 		case WIZFI360_TAG_ID_ERROR:
 		{
 			wizfi360.ExpectingResponse = 0;
+
+			#ifdef WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
 			WIZFI360_CommandCpltCallback(wizfi360.CommandId,
 					WIZFI360_RESPONSE_ERROR);
-			ErrorHandler();
+			#endif
+
 			break;
 		}
 		case WIZFI360_TAG_ID_ALREADY_CONNECTED:
 		{
 			wizfi360.ExpectingResponse = 0;
-			ErrorHandler();
 			break;
 		}
 		case WIZFI360_TAG_ID_SEND_FAIL:
 		{
-			ErrorHandler();
 			wizfi360.ExpectingResponse = 0;
 			break;
 		}
 		case WIZFI360_TAG_ID_FAIL:
 		{
+			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECT_FAILED
 			WIZFI360_WifiConnectFailedCallback();
+			#endif
 
 			if (wizfi360.CommandId == WIZFI360_CMD_ID_CWJAP_CUR &&
 					wizfi360.ExpectingResponse)
 			{
 				wizfi360.ExpectingResponse = 0;
 			}
+
 			break;
 		}
 		case WIZFI360_TAG_ID_READY:
 		{
+			ResetDataStructure();
+
+			#ifdef WIZFI360_CALLBACK_USED_MODULE_READY
 			WIZFI360_ModuleReadyCallback();
+			#endif
+
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_CONNECTED:
 		{
 			wizfi360.WifiState = WIZFI360_WIFI_CONNECTED;
+			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
+			WIZFI360_WifiConnectedCallback();
+			#endif
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_GOT_IP:
 		{
-			ErrorHandler();
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_DISCONNECT:
 		{
 			wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
+			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
+			WIZFI360_WifiDisconnectedCallback();
+			#endif
 			break;
 		}
 		case WIZFI360_TAG_ID_BUSY_SENDING:
 		{
-			ErrorHandler();
 			break;
 		}
 		case WIZFI360_TAG_ID_BUSY_PROCESSING:
 		{
-			ErrorHandler();
 			break;
 		}
 		default:
 		{
-			ErrorHandler();
 			break;
 		}
 	}
 }
 
 /*********************************************************************************************/
-
-
-/**
- * @brief	Handles errors.
- * @note	Useful for debugging purposes.
- * @retval	None
- */
-static void ErrorHandler()
-{
-	__NOP();
-}
-
-/*********************************************************************************************/
-
-/**
-  * @brief Response OK received
-  * @retval None
-  */
-__weak void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
-		WIZFI360_ResponseTypeDef response)
-{
-
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the WIZFI360_CommandCpltCallback can be implemented in the user file.
-   */
-}
-
-__weak void WIZFI360_WifiConnectedCallback()
-{
-
-}
-
-__weak void WIZFI360_WifiConnectFailedCallback()
-{
-
-}
-
-__weak void WIZFI360_ModuleReadyCallback()
-{
-
-}

@@ -1,56 +1,59 @@
 /*
- * uart.c
+ * required.c
  *
- *  Created on: 02.05.2021
+ *  Created on: 21.05.2021
  *      Author: serca
  */
 
-#include "../includes/wizfi360_uart.h"
+/*********************************************************************************************/
 
-/******************************************************************************/
+/* User Includes ----------------------------------------------------------------------------*/
 
-// Target specific code section starts here....
+#include "main.h"
+#include "wizfi360.h"
 
-#define RX_DMA_BUFFER_SIZE 128
+/*********************************************************************************************/
+/* Imported variables  ----------------------------------------------------------------------*/
 
-uint8_t aRXBufferUser[RX_DMA_BUFFER_SIZE];
-uint8_t aRXBufferA[RX_DMA_BUFFER_SIZE];
-uint8_t aRXBufferB[RX_DMA_BUFFER_SIZE];
+// The UART handler used for WizFi360 module communication.
+extern UART_HandleTypeDef huart2;
 
-__IO uint32_t uwNbReceivedChars;
-uint8_t *pBufferReadyForUser;
-uint8_t *pBufferReadyForReception;
+/*********************************************************************************************/
+/* User Defines -----------------------------------------------------------------------------*/
 
+#define RX_DMA_BUFFER_SIZE 32
 
-/**
-  * @brief 	A pointer to the UART handler used for WizFi360 module communication.
-  * @note   huart2 is exported in main.h
-  */
-UART_HandleTypeDef* pWizFi360_huart = &huart2;
+/*********************************************************************************************/
+/* User Variables ---------------------------------------------------------------------------*/
 
-// ... target specific code section ends here
+static uint8_t aRXBufferUser[RX_DMA_BUFFER_SIZE];
+static uint8_t aRXBufferA[RX_DMA_BUFFER_SIZE];
+static uint8_t aRXBufferB[RX_DMA_BUFFER_SIZE];
 
-/******************************************************************************/
-
-
-/**
-  * @brief Ring buffer for UART data reception
-  */
-ring_buffer_t rbuffer;
+static __IO  uint32_t uwNbReceivedChars;
+static uint8_t *pBufferReadyForUser;
+static uint8_t *pBufferReadyForReception;
 
 
-/**
- * @brief  This function initializes the UART interface in continuous reception mode.
- * @note   This function contains target specific code sections.
- * @retval None
+// A pointer to the UART handler used for WizFi360 module communication.
+static UART_HandleTypeDef* pWizFi360_huart = &huart2;
+
+
+/*********************************************************************************************/
+/* Required Functions -----------------------------------------------------------------------
+ *
+ *
+ *
+ *
+ *
+ *
  */
-void WIZFI360_UART_Initialize()
+
+/*
+ *	TODO: Comment
+ */
+void WIZFI360_UART_StartContinousReception()
 {
-	/* Initialize ring buffer */
-	ring_buffer_init(&rbuffer);
-
-	// Target specific code section starts here....
-
 	/* Initializes Buffer swap mechanism (used in User callback) :
 	 - 2 physical buffers aRXBufferA and aRXBufferB (RX_BUFFER_SIZE length)
 	 */
@@ -73,21 +76,26 @@ void WIZFI360_UART_Initialize()
 	RX_DMA_BUFFER_SIZE))
 	{
 		// TODO: Error handling
+	}
+}
+
+#ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
+/**
+ * @brief	Send an amount of data to WizFi360 module in interrupt mode.
+ * @note	This function contains target specific code sections.
+ * @param	pData   Pointer to data buffer (u8 or u16 data elements).
+ * @param	Size    Amount of data elements (u8 or u16) to be sent.
+ * @retval	None
+ */
+void WIZFI360_UART_SendNonBlockingMode(uint8_t* pData, uint16_t Size, uint16_t Timeout)
+{
+	if (HAL_OK != HAL_UART_Transmit_IT(pWizFi360_huart, pData, Size))
+	{
+		// TODO: ErrorHandling
 		__NOP();
 	}
-
-	// ... target specific code section ends here
 }
-
-/**
- * @brief  Returns the number of items in UART ring buffer.
- * @return The number of items in UART ring buffer.
- */
-ring_buffer_size_t WIZFI360_UART_DataAvailable()
-{
-	return ring_buffer_num_items(&rbuffer);
-}
-
+#else
 /**
  * @brief	Send an amount of data to WizFi360 module in blocking mode.
  * @note	This function contains target specific code sections.
@@ -98,53 +106,67 @@ ring_buffer_size_t WIZFI360_UART_DataAvailable()
  */
 void WIZFI360_UART_SendBlockingMode(uint8_t* pData, uint16_t Size, uint16_t Timeout)
 {
-	// Target specific code section starts here....
-
 	if (HAL_OK != HAL_UART_Transmit(pWizFi360_huart, pData, Size, Timeout))
 	{
 		// TODO: ErrorHandling
 		__NOP();
 	}
+}
+#endif
 
-	// ... target specific code section ends here
+/*
+ *	TODO: Comment
+ */
+void WIZFI360_Delay(uint32_t Delay)
+{
+	HAL_Delay(Delay);
 }
 
-/**
- * Returns the <em>len</em> oldest bytes in  UART ring buffer.
- * @param data A pointer to the array at which the data should be placed.
- * @param len The maximum number of bytes to return.
- * @return The number of bytes returned.
+
+/*
+ *	TODO: Comment
  */
-ring_buffer_size_t WIZFI360_UART_ReadArrayFromBuffer(uint8_t *data, uint16_t len)
+void WIZFI360_WriteResetPinLow()
 {
-	return ring_buffer_dequeue_arr(&rbuffer, (char*) data, len);
+	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_RESET);
 }
 
-/**
- * Returns the oldest byte in  UART ring buffer.
- * @param data A pointer to the location at which the data should be placed.
- * @return 1 if data was returned; 0 otherwise.
+/*
+ *	TODO: Comment
  */
-uint8_t WIZFI360_UART_ReadByteFromBuffer(uint8_t *data)
+void WIZFI360_WriteResetPinHigh()
 {
-	return ring_buffer_dequeue(&rbuffer, (char*) data);
+	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_SET);
 }
 
-/**
- * Peeks the UART ring buffer, i.e. returns an element without removing it.
- * @param data A pointer to the location at which the data should be placed.
- * @param index The index to peek.
- * @return 1 if data was returned; 0 otherwise.
+/*
+ *	TODO: Comment
  */
-uint8_t WIZFI360_UART_PeekFromBuffer(uint8_t *data, ring_buffer_size_t index)
+void WIZFI360_PreResetHard()
 {
-	return ring_buffer_peek(&rbuffer, (char*)data, index);
+	// Abort ongoing UART transmission
+	HAL_UART_Abort(pWizFi360_huart);
+	// Abort ongoing UART reception
+	HAL_UART_AbortReceive(pWizFi360_huart);
+
+	// Disable UART reception
+	(pWizFi360_huart)->Instance->CR1 &= ~USART_CR1_RE;
+}
+
+/*
+ *	TODO: Comment
+ */
+void WIZFI360_PostResetHard()
+{
+	// Enable UART reception
+	(pWizFi360_huart)->Instance->CR1 |= USART_CR1_RE;
+
+	// Restart continous UART reception
+	WIZFI360_UART_StartContinousReception();
 }
 
 
 /******************************************************************************/
-
-// Target specific code section starts here....
 
 /**
  * @brief  User implementation of the Reception Event Callback
@@ -197,7 +219,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 			}
 		}
 		/* Process received data that has been extracted from Rx User buffer */
-		ring_buffer_queue_arr(&rbuffer, (char*) pBufferReadyForUser, uwNbReceivedChars);
+		WIZFI360_UART_BytesReceived((char*) pBufferReadyForUser, uwNbReceivedChars);
 
 		/* Swap buffers for next bytes to be processed */
 		ptemp = pBufferReadyForUser;
@@ -208,7 +230,5 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	 indicates position to which data have been processed */
 	old_pos = Size;
 }
-
-// ... target specific code section ends here
 
 /******************************************************************************/
