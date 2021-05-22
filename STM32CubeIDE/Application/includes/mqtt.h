@@ -8,12 +8,10 @@
 #ifndef INCLUDES_MQTT_H_
 #define INCLUDES_MQTT_H_
 
-#include "main.h"
-#include "./mqtt_user.h"
+#include <stdint.h>
 
 void MqttClient_Initialize();
 void MqttClient_Process();
-void MqttClient_Publish();
 
 void MqttClient_PublishInteger(const char* description, const int value);
 void MqttClient_PublishString(const char* description, const char* value);

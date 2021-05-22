@@ -8,18 +8,28 @@
 
 /*********************************************************************************************/
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes ---------------------------------------------------------------------------------*/
 
-#include <stdio.h>
+// Used for NULL
+#include <stddef.h>
+#include <stdint.h>
+
 #include "../includes/mqtt.h"
+#include "../includes/mqtt_required.h"
 #include "../includes/mqtt_user.h"
+
+// WizFi360 module driver
 #include "../includes/wizfi360.h"
+
+// Yakindu Statechart
 #include "../src-gen/MqttClientStatemachine.h"
 #include "../src-gen/sc_timer_service.h"
-#include "../includes/jWrite.h"
+
+// JSON Write library
+#include "../thirdparty/jWrite.h"
+
 
 /*********************************************************************************************/
-
 /* Private Defines ------------------------------------------------------------------*/
 
 // Maximum amount of timers used simultaneously in statemachine
@@ -36,11 +46,12 @@
 #define MAX_PUB_MSG_SIZE	128
 static char message[MAX_PUB_MSG_SIZE] = { 0 };
 
+// Some time variables (in ms) used for  mqtt process scheduling
 static uint32_t current_time = 0;
 static uint32_t last_time = 0;
 static uint32_t elapsed_time = 0;
 
-// The statemachine handler
+// The statemachine handler (from Yakindu)
 static MqttClientStatemachine sm;
 
 // Timer handlers used for statemachine events
@@ -48,7 +59,6 @@ static sc_timer_t timers[MAX_TIMERS];
 
 // The timers are managed by a timer service.
 static sc_timer_service_t timer_service;
-
 
 volatile uint32_t uart_error_ctr = 0;
 
@@ -66,7 +76,7 @@ uint32_t enableDhcpFailed_ctr = 0;
 
 void MqttClient_Publish()
 {
-	MqttClient_PublishInteger("time", HAL_GetTick());
+	MqttClient_PublishInteger("time", MqttClient_GetTick());
 	MqttClient_PublishInteger( "uart", uart_error_ctr);
 	MqttClient_PublishInteger( "rst", resetModuleFailed_ctr);
 	MqttClient_PublishInteger( "pub", publishTopicFailed_ctr);
@@ -82,7 +92,6 @@ static void mqttClientStatemachine_write_inputs();
 static void mqttClientStatemachine_handle_reset_source();
 static void mqttClientStatemachine_handle_command_request();
 
-
 /*********************************************************************************************/
 
 /* Public functions ---------------------------------------------------------*/
@@ -94,19 +103,24 @@ static void mqttClientStatemachine_handle_command_request();
   */
 void MqttClient_Initialize()
 {
-	/*! Initializes the timer service */
-	sc_timer_service_init(&timer_service, timers, MAX_TIMERS,
+	// Initialize timer services used for state machine timer events
+ 	sc_timer_service_init(&timer_service, timers, MAX_TIMERS,
 	        (sc_raise_time_event_fp) &mqttClientStatemachine_raise_time_event);
 
+ 	// Initialize the state machine
 	mqttClientStatemachine_init(&sm);
 
+	// Set the sample time of the state machine
 	mqttClientStatemachine_set_dT(&sm, SAMPLE_TIME);
 
+	// Set the mqtt publish interval
 	mqttClientStatemachine_set_publishInterval(&sm, MQTT_PUBLISH_INTERVAL);
 
+	// Enter the state machine
 	mqttClientStatemachine_enter(&sm);
 
-	last_time = HAL_GetTick();
+	// Update time variable (used for state machine scheduling)
+	last_time = MqttClient_GetTick();
 }
 
 /**
@@ -120,7 +134,7 @@ void MqttClient_Process()
 	WIZFI360_Process();
 
 	// Get elapsed time
-	current_time = HAL_GetTick();
+	current_time = MqttClient_GetTick();
 	elapsed_time = current_time - last_time;
 	
 	// If task is ready...
@@ -255,23 +269,23 @@ static void mqttClientStatemachine_handle_reset_source()
 static void mqttClientStatemachine_handle_command_request()
 {
 	if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
-		WIZFI360_ConfigureMode(WIZFI360_MODE_STATION);
+		WIZFI360_AT_ConfigureMode(WIZFI360_MODE_STATION);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_enableDhcp(&sm))
-		WIZFI360_ConfigureDhcp(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
+		WIZFI360_AT_ConfigureDhcp(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPoint(&sm))
-		WIZFI360_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);
+		WIZFI360_AT_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_configureMqtt(&sm))
-		WIZFI360_MqttInit(MQTT_USERNAME, MQTT_PASSWORD,
+		WIZFI360_AT_ConfigureMqtt(MQTT_USERNAME, MQTT_PASSWORD,
 				MQTT_CLIENT_ID, MQTT_ALIVE_TIME);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
-		WIZFI360_MqttSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
+		WIZFI360_AT_MqttSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
-		WIZFI360_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
+		WIZFI360_AT_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
 		        MQTT_ADDRESS, MQTT_PORT);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_publishTopic(&sm))
@@ -283,7 +297,7 @@ static void mqttClientStatemachine_handle_command_request()
 
 		jwEnd();
 
-		WIZFI360_MqttPublishMessage(message);
+		WIZFI360_AT_MqttPublishMessage(message);
 	}
 }
 

@@ -37,9 +37,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-extern ADC_HandleTypeDef hadc1;
-extern UART_HandleTypeDef huart2;
-extern DMA_HandleTypeDef hdma_usart2_rx;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
