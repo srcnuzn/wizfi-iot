@@ -70,12 +70,18 @@ WIZFI360_HandlerTypedef wizfi360;
 /* Public functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Initializes the WizFi360 module
-  * @note	This function must be called once in application startup.
+  * @brief  Initializes the WizFi360 handler and starts listening for UART data.
+  * @note	This function should be called once before using other WIZFI360 functions.
+  * @note	We assume, that the module is reset on startup. This assumption might be false.
+  * 		To make sure, that the module is reset, either reset the module using the reset
+  * 		pin, or restart the module using the AT+RST command.
   * @retval none
   */
 void WIZFI360_Initialize()
 {
+	// Reset the wizfi360 data structure.
+	ResetDataStructure();
+
 	// Call user specific function
 	WIZFI360_UART_StartContinousReception();
 }

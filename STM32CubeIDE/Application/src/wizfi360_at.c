@@ -93,7 +93,7 @@ void WIZFI360_AT_Test()
  * @brief	Restarts the WizFi360 module.
  * @retval	None
  */
-void WIZFI360_AT_RestartModule()
+void WIZFI360_AT_Restart()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)

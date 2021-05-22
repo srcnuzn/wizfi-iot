@@ -60,27 +60,10 @@ static sc_timer_t timers[MAX_TIMERS];
 // The timers are managed by a timer service.
 static sc_timer_service_t timer_service;
 
-volatile uint32_t uart_error_ctr = 0;
-
-volatile uint32_t timeout_ctr = 0;
-
-uint32_t configureMqttFailed_ctr = 0;
-uint32_t connectToAccessPointFailed_ctr = 0;
-uint32_t connectToBrokerFailed_ctr = 0;
-uint32_t publishTopicFailed_ctr = 0;
-uint32_t resetModuleFailed_ctr = 0;
-uint32_t setStationModeFailed_ctr = 0;
-uint32_t setTopicFailed_ctr = 0;
-uint32_t enableDhcpFailed_ctr = 0;
-
 
 void MqttClient_Publish()
 {
 	MqttClient_PublishInteger("time", MqttClient_GetTick());
-	MqttClient_PublishInteger( "uart", uart_error_ctr);
-	MqttClient_PublishInteger( "rst", resetModuleFailed_ctr);
-	MqttClient_PublishInteger( "pub", publishTopicFailed_ctr);
-	MqttClient_PublishInteger( "ap", connectToAccessPointFailed_ctr);
 }
 
 /*********************************************************************************************/
@@ -89,8 +72,6 @@ void MqttClient_Publish()
 
 static void mqttClientStatemachine_react_to_events();
 static void mqttClientStatemachine_write_inputs();
-static void mqttClientStatemachine_handle_reset_source();
-static void mqttClientStatemachine_handle_command_request();
 
 /*********************************************************************************************/
 
@@ -214,61 +195,22 @@ static void mqttClientStatemachine_write_inputs()
   */
 static void mqttClientStatemachine_react_to_events()
 {
-	mqttClientStatemachine_handle_reset_source();
+	if (mqttClientStatemachine_System_is_raised_reset(&sm))
+		MqttClient_HandleSystemResetRequest();
 
-	// If the state machine requests a reset...
-	if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
-	{
-		// Reset the module
+	else if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
 		WIZFI360_Reset();
-	}
-	// else, if there is no reset request...
-	else
-	{
-		// Check for command requests and handle them.
-		mqttClientStatemachine_handle_command_request();
-	}
-}
 
-static void mqttClientStatemachine_handle_reset_source()
-{
-	if (mqttClientStatemachine_WizFi360_is_raised_configureMqttFailed(&sm))
-	{
-		configureMqttFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPointFailed(&sm))
-	{
-		connectToAccessPointFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_connectToBrokerFailed(&sm))
-	{
-		connectToBrokerFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_enableDhcpFailed(&sm))
-	{
-		enableDhcpFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_publishTopicFailed(&sm))
-	{
-		publishTopicFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_resetModuleFailed(&sm))
-	{
-		resetModuleFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_setStationModeFailed(&sm))
-	{
-		setStationModeFailed_ctr++;
-	}
-	if (mqttClientStatemachine_WizFi360_is_raised_setTopicFailed(&sm))
-	{
-		setTopicFailed_ctr++;
-	}
-}
+	else if (mqttClientStatemachine_WizFi360_is_raised_initializeModule(&sm))
+		WIZFI360_Initialize();
 
-static void mqttClientStatemachine_handle_command_request()
-{
-	if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_testModule(&sm))
+		WIZFI360_AT_Test();
+
+	else if (mqttClientStatemachine_WizFi360_is_raised_restartModule(&sm))
+		WIZFI360_AT_Restart();
+
+	else if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
 		WIZFI360_AT_SetWifiMode(WIZFI360_MODE_STATION);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_enableDhcp(&sm))
