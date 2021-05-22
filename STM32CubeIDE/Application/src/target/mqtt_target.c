@@ -16,7 +16,7 @@
 /* Required Functions -----------------------------------------------------------------------*/
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on MqttClient_GetTick
  */
 uint32_t MqttClient_GetTick()
 {

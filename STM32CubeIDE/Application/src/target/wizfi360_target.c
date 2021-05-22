@@ -43,14 +43,14 @@ static UART_HandleTypeDef* pWizFi360_huart = &huart2;
 /* Required Functions -----------------------------------------------------------------------
  *
  *
- *
+ *	TODO: Comment on required function implementation
  *
  *
  *
  */
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on WIZFI360_UART_StartContinousReception
  */
 void WIZFI360_UART_StartContinousReception()
 {
@@ -115,7 +115,7 @@ void WIZFI360_UART_SendBlockingMode(uint8_t* pData, uint16_t Size, uint16_t Time
 #endif
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on WIZFI360_Delay
  */
 void WIZFI360_Delay(uint32_t Delay)
 {
@@ -124,7 +124,7 @@ void WIZFI360_Delay(uint32_t Delay)
 
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on WIZFI360_WriteResetPinLow
  */
 void WIZFI360_WriteResetPinLow()
 {
@@ -132,7 +132,7 @@ void WIZFI360_WriteResetPinLow()
 }
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on WIZFI360_WriteResetPinHigh
  */
 void WIZFI360_WriteResetPinHigh()
 {
@@ -140,7 +140,7 @@ void WIZFI360_WriteResetPinHigh()
 }
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on WIZFI360_PreResetHard
  */
 void WIZFI360_PreResetHard()
 {
@@ -154,7 +154,7 @@ void WIZFI360_PreResetHard()
 }
 
 /*
- *	TODO: Comment
+ *	TODO: Comment on WIZFI360_PostResetHard
  */
 void WIZFI360_PostResetHard()
 {

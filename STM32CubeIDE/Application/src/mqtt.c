@@ -269,10 +269,10 @@ static void mqttClientStatemachine_handle_reset_source()
 static void mqttClientStatemachine_handle_command_request()
 {
 	if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
-		WIZFI360_AT_ConfigureMode(WIZFI360_MODE_STATION);
+		WIZFI360_AT_SetWifiMode(WIZFI360_MODE_STATION);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_enableDhcp(&sm))
-		WIZFI360_AT_ConfigureDhcp(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
+		WIZFI360_AT_SetDhcpMode(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPoint(&sm))
 		WIZFI360_AT_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);

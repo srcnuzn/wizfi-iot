@@ -102,7 +102,7 @@ typedef enum
 	WIZFI360_MODE_STATION,				/*!< Station Mode */
 	WIZFI360_MODE_SOFT_AP,				/*!<  SoftAP mode (factory default) */
 	WIZFI360_MODE_BOTH,					/*!<  Station + SoftAP mode */
-} WIZFI360_ModeTypeDef;
+} WIZFI360_WifiModeTypeDef;
 
 
 /**
@@ -140,15 +140,24 @@ typedef enum
 	WIZFI360_DHCP_DISABLE				/*!< Disable DHCP */
 }WIZFI360_DhcpModeTypeDef;
 
-
 /**
-  * @brief WIZFI360 MQQT authentication mode definition
+  * @brief WIZFI360 Echo mode definition
   */
 typedef enum
 {
-	WIZFI360_MQQT_AUTH_ENABLE,				/*!< Enables MQQT authentication (userName/password needed) */
-	WIZFI360_MQTT_AUTH_DISABLE				/*!< Disable MQQT authentication (userName/password not needed) */
-}WIZFI360_MqqtAuthModeTypeDef;
+	WIZFI360_ECHO_DISABLE,				/*!< Disable Command Echos */
+	WIZFI360_ECHO_ENABLE,				/*!< Enable Command Echos */
+}WIZFI360_EchoModeTypeDef;
+
+
+/**
+  * @brief WIZFI360 MQTT authentication mode definition
+  */
+typedef enum
+{
+	WIZFI360_MQTT_AUTH_ENABLE,				/*!< Enables MQTT authentication (userName/password needed) */
+	WIZFI360_MQTT_AUTH_DISABLE				/*!< Disable MQTT authentication (userName/password not needed) */
+}WIZFI360_MqttAuthModeTypeDef;
 
 
 /**
@@ -225,7 +234,13 @@ typedef enum
 															<broker port>: the broker port number
 												Response:	OK
 										*/
-	WIZFI360_CMD_ID_MQTTPUB,			/*!< 	TODO COMMENT */
+	WIZFI360_CMD_ID_MQTTPUB,			/*!< 	TODO Comment on WIZFI360_CMD_ID_MQTTPUB */
+	WIZFI360_CMD_ID_MQTTDIS,			/*!< 	TODO Comment on WIZFI360_CMD_ID_MQTTDIS */
+	WIZFI360_CMD_ID_TEST,				/*!< 	TODO Comment on WIZFI360_CMD_ID_TEST */
+	WIZFI360_CMD_ID_RST,				/*!< 	TODO Comment on WIZFI360_CMD_ID_RST */
+	WIZFI360_CMD_ID_ECHO,				/*!< 	TODO Comment on WIZFI360_CMD_ID_ECHO */
+
+
 } WIZFI360_CommandIdTypeDef;
 
 
@@ -234,11 +249,10 @@ typedef enum
   */
 typedef struct __WIZFI360_HandlerTypedef
 {
-	WIZFI360_ModeTypeDef Mode;							/*!< Indicates, weather the module is in Station-Mode, Soft-AP-Mode or
+	WIZFI360_WifiModeTypeDef WifiMode;					/*!< Indicates, weather the module is in Station-Mode, Soft-AP-Mode or
 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 both (Station-Mode & Soft-AP-Mode). */
-	uint8_t EchoEnabled;								/*!< Indicates, weather the echo mode is enabled.
-															 	 0: echo is not enabled
-															 	 1: echo is enabled (default) */
+	WIZFI360_EchoModeTypeDef EchoMode;					/*!< Indicates, weather the echo mode is enabled. */
+
 	uint8_t ExpectingEcho;								/*!< Indicates, weather an echo is expected in the receive buffer.
 															 Echo is expected, after AT command is sent, while echo mode is enabled.
 															 	 0: echo is not expected
@@ -249,11 +263,19 @@ typedef struct __WIZFI360_HandlerTypedef
 															 	 0: response is not expected
 															 	 1: response is expected */
 	char CommandBuffer[WIZFI360_MAX_CMD_LEN];			/*!< String buffer holds the ongoing/last AT command to be transmitted via UART */
+
 	uint8_t CommandLength;								/*!< The length of the AT command in CommandBuffer */
+
 	WIZFI360_CommandIdTypeDef CommandId;				/*!< Identifies the ongoing/last AT command */
+
 	uint8_t TagCharsReceived[WIZFI360_NUM_TAGS];		/*!< The amount of consecutive tag characters found in UART receive buffer. */
+
 	uint8_t EchoCharsReceived;							/*!< The amount of consecutive echo characters found in UART receive buffer. */
+
 	uint8_t WifiState;									/*!< Indicates, weather the module is connected to an AP or not. */
+
+	ring_buffer_t UartRxBuffer;							/*!< TODO: Comment on UartRxBuffer */
+
 } WIZFI360_HandlerTypedef;
 
 /*********************************************************************************************/
@@ -268,17 +290,23 @@ void WIZFI360_Reset();
 
 void WIZFI360_ResetHard();
 
-void WIZFI360_AT_ResetModule();
+void WIZFI360_AT_RestartModule();
 
 WIZFI360_State WIZFI360_GetState();
 
 WIZFI360_WifiState WIZFI360_GetWifiState();
 
+void WIZFI360_AT_Test();
+
+void WIZFI360_AT_RestartModule();
+
+void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode);
+
 void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* password);
 
-void WIZFI360_AT_ConfigureMode(WIZFI360_ModeTypeDef mode);
+void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode);
 
-void WIZFI360_AT_ConfigureDhcp(WIZFI360_ModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
+void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
 
 void WIZFI360_AT_GetSSLCertificate();
 
@@ -293,7 +321,11 @@ void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 void WIZFI360_AT_MqttConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
 		uint16_t mqttBrokerPort);
 
+void WIZFI360_AT_MqttDisconnectFromBroker();
+
 void WIZFI360_AT_MqttPublishMessage(const char* message);
+
+void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId);
 
 void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size);
 
