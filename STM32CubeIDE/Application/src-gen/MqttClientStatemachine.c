@@ -153,7 +153,6 @@ static sc_integer main_region_Undefined_r1_ResetSystem_react(MqttClientStatemach
 
 /*! The reactions of state Initialize. */
 static sc_integer main_region_Undefined_r1_Initialize_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
-
 /*! The reactions of state Online. */
 static sc_integer main_region_Online_react(MqttClientStatemachine* handle, const sc_integer transitioned_before);
 
@@ -770,6 +769,30 @@ static sc_boolean check_main_region_Undefined_r1__choice_5_tr1_tr1(MqttClientSta
 {
 	return (handle->ifaceWizFi360.resetFailCounter) > (4);
 }
+sc_integer mqttClientStatemachine_WizFi360_get_testFailCounter(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.testFailCounter;
+}
+void mqttClientStatemachine_WizFi360_set_testFailCounter(MqttClientStatemachine* handle, sc_integer value)
+{
+	handle->ifaceWizFi360.testFailCounter = value;
+}
+sc_integer mqttClientStatemachine_WizFi360_get_restartFailCounter(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.restartFailCounter;
+}
+void mqttClientStatemachine_WizFi360_set_restartFailCounter(MqttClientStatemachine* handle, sc_integer value)
+{
+	handle->ifaceWizFi360.restartFailCounter = value;
+}
+sc_integer mqttClientStatemachine_WizFi360_get_resetFailCounter(const MqttClientStatemachine* handle)
+{
+	return handle->ifaceWizFi360.resetFailCounter;
+}
+void mqttClientStatemachine_WizFi360_set_resetFailCounter(MqttClientStatemachine* handle, sc_integer value)
+{
+	handle->ifaceWizFi360.resetFailCounter = value;
+}
 
 static void effect_main_region_Undefined_tr0(MqttClientStatemachine* handle)
 {
@@ -1297,7 +1320,6 @@ static void exseq_main_region_Undefined_r1_Initialize(MqttClientStatemachine* ha
 	/* Default exit sequence for state Initialize */
 	handle->stateConfVector[0] = MqttClientStatemachine_last_state;
 }
-
 /* Default exit sequence for state Online */
 static void exseq_main_region_Online(MqttClientStatemachine* handle)
 {
