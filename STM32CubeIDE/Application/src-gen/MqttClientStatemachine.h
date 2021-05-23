@@ -47,7 +47,7 @@ extern "C" {
 */
 
 /*! Define number of states in the state enum */
-#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 18
+#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 19
 
 /*! Define dimension of the state configuration vector for orthogonal states. */
 #define MQTTCLIENTSTATEMACHINE_MAX_ORTHOGONAL_STATES 1
@@ -61,6 +61,7 @@ extern "C" {
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_TESTMODULE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_RESTARTMODULE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_RESETSYSTEM 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_INITIALIZE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_CONNECTTOBROKER 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_ENTRY 0
@@ -84,6 +85,7 @@ typedef enum
 	MqttClientStatemachine_main_region_Undefined_r1_TestModule,
 	MqttClientStatemachine_main_region_Undefined_r1_RestartModule,
 	MqttClientStatemachine_main_region_Undefined_r1_ResetSystem,
+	MqttClientStatemachine_main_region_Undefined_r1_Initialize,
 	MqttClientStatemachine_main_region_Online,
 	MqttClientStatemachine_main_region_Online_r1_ConnectToBroker,
 	MqttClientStatemachine_main_region_Online_r1_Entry,
@@ -139,24 +141,10 @@ struct MqttClientStatemachineIfaceWizFi360
 	sc_boolean testModule_raised;
 	sc_observable restartModule;
 	sc_boolean restartModule_raised;
+	sc_observable initializeModule;
+	sc_boolean initializeModule_raised;
 	sc_observable resetModule;
 	sc_boolean resetModule_raised;
-	sc_observable setStationModeFailed;
-	sc_boolean setStationModeFailed_raised;
-	sc_observable enableDhcpFailed;
-	sc_boolean enableDhcpFailed_raised;
-	sc_observable connectToAccessPointFailed;
-	sc_boolean connectToAccessPointFailed_raised;
-	sc_observable configureMqttFailed;
-	sc_boolean configureMqttFailed_raised;
-	sc_observable setTopicFailed;
-	sc_boolean setTopicFailed_raised;
-	sc_observable connectToBrokerFailed;
-	sc_boolean connectToBrokerFailed_raised;
-	sc_observable publishTopicFailed;
-	sc_boolean publishTopicFailed_raised;
-	sc_observable resetModuleFailed;
-	sc_boolean resetModuleFailed_raised;
 	sc_boolean ok_raised;
 	sc_boolean error_raised;
 	sc_boolean fail_raised;
@@ -331,59 +319,17 @@ extern sc_observable* mqttClientStatemachine_WizFi360_get_restartModule(MqttClie
 /*! Checks if the out event 'restartModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_restartModule(const MqttClientStatemachine* handle);
 
+/*! Returns the observable for the out event 'initializeModule' that is defined in the interface scope 'WizFi360'. */ 
+extern sc_observable* mqttClientStatemachine_WizFi360_get_initializeModule(MqttClientStatemachine* handle);
+
+/*! Checks if the out event 'initializeModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
+extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_initializeModule(const MqttClientStatemachine* handle);
+
 /*! Returns the observable for the out event 'resetModule' that is defined in the interface scope 'WizFi360'. */ 
 extern sc_observable* mqttClientStatemachine_WizFi360_get_resetModule(MqttClientStatemachine* handle);
 
 /*! Checks if the out event 'resetModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_resetModule(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'setStationModeFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_setStationModeFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'setStationModeFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_setStationModeFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'enableDhcpFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_enableDhcpFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'enableDhcpFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_enableDhcpFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'connectToAccessPointFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_connectToAccessPointFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'connectToAccessPointFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_connectToAccessPointFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'configureMqttFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_configureMqttFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'configureMqttFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_configureMqttFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'setTopicFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_setTopicFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'setTopicFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_setTopicFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'connectToBrokerFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_connectToBrokerFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'connectToBrokerFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_connectToBrokerFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'publishTopicFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_publishTopicFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'publishTopicFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_publishTopicFailed(const MqttClientStatemachine* handle);
-
-/*! Returns the observable for the out event 'resetModuleFailed' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_resetModuleFailed(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'resetModuleFailed' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_resetModuleFailed(const MqttClientStatemachine* handle);
 
 /*! Raises the in event 'ok' that is defined in the interface scope 'WizFi360'. */ 
 extern void mqttClientStatemachine_WizFi360_raise_ok(MqttClientStatemachine* handle);

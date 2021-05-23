@@ -38,7 +38,6 @@ static uint8_t *pBufferReadyForReception;
 // A pointer to the UART handler used for WizFi360 module communication.
 static UART_HandleTypeDef* pWizFi360_huart = &huart2;
 
-
 /*********************************************************************************************/
 /* Required Functions -----------------------------------------------------------------------
  *
@@ -54,6 +53,9 @@ static UART_HandleTypeDef* pWizFi360_huart = &huart2;
  */
 void WIZFI360_UART_StartContinousReception()
 {
+	// Abort ongoing UART reception
+	HAL_UART_AbortReceive(pWizFi360_huart);
+
 	/* Initializes Buffer swap mechanism (used in User callback) :
 	 - 2 physical buffers aRXBufferA and aRXBufferB (RX_BUFFER_SIZE length)
 	 */
@@ -229,6 +231,13 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	/* Update old_pos as new reference of position in User Rx buffer that
 	 indicates position to which data have been processed */
 	old_pos = Size;
+}
+
+
+uint32_t uart_err = 0;
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	uart_err++;
 }
 
 /******************************************************************************/

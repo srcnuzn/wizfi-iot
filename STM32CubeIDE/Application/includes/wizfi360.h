@@ -290,7 +290,7 @@ void WIZFI360_Reset();
 
 void WIZFI360_ResetHard();
 
-void WIZFI360_AT_RestartModule();
+void WIZFI360_AT_Restart();
 
 WIZFI360_State WIZFI360_GetState();
 
@@ -298,7 +298,7 @@ WIZFI360_WifiState WIZFI360_GetWifiState();
 
 void WIZFI360_AT_Test();
 
-void WIZFI360_AT_RestartModule();
+void WIZFI360_AT_Restart();
 
 void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode);
 

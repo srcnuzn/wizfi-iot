@@ -15,6 +15,8 @@ extern void MqttClient_Publish();
 
 extern uint32_t MqttClient_GetTick();
 
+extern void MqttClient_HandleSystemResetRequest();
+
 /*********************************************************************************************/
 
 

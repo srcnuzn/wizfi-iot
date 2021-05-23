@@ -23,4 +23,9 @@ uint32_t MqttClient_GetTick()
 	return HAL_GetTick();
 }
 
+void MqttClient_HandleSystemResetRequest()
+{
+	NVIC_SystemReset();
+}
+
 /*********************************************************************************************/
