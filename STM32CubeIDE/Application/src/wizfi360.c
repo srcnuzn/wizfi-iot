@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "../includes/wizfi360.h"
+#include "../includes/wizfi360_opts.h"
 #include "../includes/wizfi360_required.h"
 
 /*********************************************************************************************/
@@ -41,8 +42,6 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 	[WIZFI360_TAG_ID_FAIL] = WIZFI360_TAG_FAIL
 };
 
-// TODO Create MQTT subscribe_topic list (id + string) (configurable by user)
-// TODO Create MQTT WIZFI360_TopicIdTypeDef (configurable by user)
 
 /*********************************************************************************************/
 
@@ -53,8 +52,7 @@ static void ScanBufferForTags(uint8_t tmpChar, int i);
 static void ScanBufferForEcho(uint8_t tmpChar, int i);
 static void ScanBufferForMqttTopics(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
-static void MqttTopicReceivedCallback(uint32_t topicId, int length);
-
+static void DefaultCallback(char* message);
 
 /*********************************************************************************************/
 
@@ -150,8 +148,6 @@ void WIZFI360_ResetHard()
 }
 
 
-
-
 /**
  * @brief	Returns the state of the module.
  * @retval	The modules state
@@ -174,9 +170,6 @@ WIZFI360_WifiState WIZFI360_GetWifiState()
 	return wizfi360.WifiState;
 }
 
-
-
-
 /*
  * TODO: Comment on WIZFI360_UART_BytesReceived
  */
@@ -191,6 +184,36 @@ void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size)
 void WIZFI360_UART_ByteReceived(const char data)
 {
 	ring_buffer_queue(&(wizfi360.UartRxBuffer), data);
+}
+
+/*
+ * TODO: WIZFI360_RegisterSubTopicCallback
+ */
+void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
+{
+	if (wizfi360.NumSubTopicCallbacks >= WIZFI360_MAX_SUBTOPIC_CALLBACKS)
+	{
+		// TODO: Error Handling
+		return;
+	}
+
+	if (strlen(topic) >= WIZFI360_MAX_SUBTOPIC_LEN)
+	{
+		// TODO: Error Handling
+		return;
+	}
+
+	uint8_t topicId = wizfi360.NumSubTopicCallbacks;
+
+	wizfi360.SubTopicCharsReceived[topicId] = 0;
+
+	strcpy(wizfi360.SubTopics[topicId], topic);
+
+	strcat(wizfi360.SubTopics[topicId], " -> ");
+
+	wizfi360.SubTopicCallbacks[topicId] = func;
+
+	wizfi360.NumSubTopicCallbacks++;
 }
 
 /*********************************************************************************************/
@@ -219,10 +242,26 @@ static void ResetDataStructure()
 
 	wizfi360.EchoCharsReceived = 0;
 
+	// TODO: Improve data structure reset for registered subtopic callbacks
+	// >>>>>>>
+	wizfi360.MessageIncoming = 0;
+
 	for (int tagId = 0; tagId < WIZFI360_NUM_TAGS; tagId++)
 	{
 		wizfi360.TagCharsReceived[tagId] = 0;
 	}
+
+	wizfi360.NumSubTopicCallbacks = 0;
+
+	for (int topicId = 0; topicId < WIZFI360_MAX_SUBTOPIC_CALLBACKS; topicId++)
+	{
+		wizfi360.SubTopicCharsReceived[topicId] = 0;
+		wizfi360.SubTopics[topicId][0] = '\0';
+		wizfi360.SubTopicCallbacks[topicId] = DefaultCallback;
+	}
+
+	WIZFI360_RegisterSubscribeCallbacks();
+	// <<<<<<<
 }
 
 
@@ -325,12 +364,129 @@ static void ScanBufferForTags(uint8_t tmpChar, int i)
  */
 static void ScanBufferForMqttTopics(uint8_t tmpChar, int i)
 {
-	// TODO: Implement ScanBufferForMqttTopics
+	/*
+	 * MqttTopics come as follows: "subtopic -> message\r\n"
+	 *
+	 * This function contains of two parts:
+	 *
+	 * 		1)  Look for topic string: "subtopic -> "
+	 *
+	 * 		    When no message is incoming, we look for the topic string.
+	 * 		    When the topic string was found, a message is incoming. The topic
+	 * 		    id is stored in receivingTopic variable.
+	 *
+	 * 		2)  Look for termination string: "\r\n"
+	 *
+	 * 			When the message is incoming, we look for the CR+LF termination string.
+	 * 			When the termination string is found, we read the message (in between
+	 * 			of topic string and termination string) and raise the corresponding
+	 * 			callback.
+	 */
 
-	// TODO: Call MqttTopicReceivedCallback, if topic found
-	if (1)
+	// Represents the topicId, if a message is incoming
+	static int receivingTopic = 0;
+	// Helper variable used to detect termination string
+	static int cr_found = 0;
+
+	// If no message is incoming...
+	if (!wizfi360.MessageIncoming)
 	{
-		MqttTopicReceivedCallback(0,0);
+		// For each topic that could be received from wizfi module...
+		for (int topicId = 0; topicId < wizfi360.NumSubTopicCallbacks; topicId++)
+		{
+			uint32_t CharsFound = wizfi360.SubTopicCharsReceived[topicId];
+			char CharToFind = wizfi360.SubTopics[topicId][CharsFound];
+
+			// If we found a consecutive matching character in the topic string...
+			if (tmpChar == CharToFind)
+			{
+				// We found one more matching character for this topic string.
+				wizfi360.SubTopicCharsReceived[topicId]++;
+
+				// If we found a full topic string in UART receive buffer...
+				if (wizfi360.SubTopicCharsReceived[topicId]
+						== strlen(wizfi360.SubTopics[topicId]))
+				{
+					// The length of the topic string.
+					const int length = strlen(wizfi360.SubTopics[topicId]);
+
+					// A dummy storage for the topic string
+					uint8_t data[length];
+					// Read the topic string into the dummy storage (to clear the buffer)
+					ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), (char*)data, length);
+
+					// Now we scan for the actual message...
+					wizfi360.MessageIncoming = 1;
+					cr_found = 0;
+					// The message belongs to this topicId.
+					receivingTopic = topicId;
+
+					// Reset the counter.
+					wizfi360.SubTopicCharsReceived[topicId] = 0;
+				}
+			}
+			// if we did not find a consecutive matching character, but instead the first character...
+			else if (tmpChar == wizfi360.SubTopics[topicId][0])
+			{
+				// Set the matchCounter to one.
+				wizfi360.SubTopicCharsReceived[topicId] = 1;
+			}
+			// else, if nothing related to the tag was found...
+			else
+			{
+				// Reset the tag counter.
+				wizfi360.SubTopicCharsReceived[topicId] = 0;
+			}
+		}
+	}
+	// If there is a message incoming...
+	else
+	{
+		// If we did not find '\r' yet...
+		if (!cr_found)
+		{
+			// If the current char is '\r'...
+			if (tmpChar == '\r')
+			{
+				// We found '\r'!
+				cr_found = 1;
+			}
+		}
+		// If we did find '\r' already....
+		else
+		{
+			// And if the next char is '\n'...
+			if (tmpChar == '\n')
+			{
+				// We found the message!
+
+				// The length of the message
+				uint32_t length = i - 2;
+				// A storage for the message + '\0' null termination character
+				char message[length + 1];
+				// Read the message data
+				ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), message, length);
+				// Append a null termination character.
+				message[length] = '\0';
+
+				// Raise the callback
+				wizfi360.SubTopicCallbacks[receivingTopic](message);
+
+				// Read the \r\n characters into dummy string (to clear the buffer)
+				char dummy[2];
+				ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), dummy, 2);
+
+				// The incoming message was fully read. We are ready for new messages.
+				wizfi360.MessageIncoming = 0;
+			}
+			// If the next char was not '\n'...
+			else
+			{
+				// We look for CR again.
+				cr_found = 0;
+			}
+		}
+
 	}
 }
 
@@ -401,13 +557,13 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 	}
 }
 
+
 /**
- * TODO: Comment on MqttTopicReceivedCallback
+ * TODO: Comment on DefaultCallback
  */
-static void MqttTopicReceivedCallback(uint32_t topicId, int length)
+static void DefaultCallback(char* message)
 {
-	// TODO: Implement MqttTopicReceivedCallback
-	// TODO: Notify User about received MqttTopic
+
 }
 
 /*********************************************************************************************/

@@ -24,6 +24,8 @@
 #define WIZFI360_MAX_MQTT_PWD_LEN			 50
 #define WIZFI360_MAX_MQTT_CLIENTID_LEN		 50
 
+#define WIZFI360_MAX_SUBTOPIC_SCAN_LEN		WIZFI360_MAX_SUBTOPIC_LEN + 4
+
 #define WIZFI360_NUM_TAGS 	18
 
 #define WIZFI360_TAG_ERROR				 	"\r\nERROR\r\n"
@@ -90,7 +92,7 @@ typedef enum
 	WIZFI360_TAG_ID_NETWORK_DATA_RECEIVED,	/*!< Received network data. */
 	WIZFI360_TAG_ID_STA_CONNECTED,			/*!< A Station connects to the WizFi360 SoftAP */
 	WIZFI360_TAG_ID_DIST_STA_IP,			/*!< WizFi360 SoftAP distributes an IP address to the Station connected. */
-	WIZFI360_TAG_ID_STA_DISCONNECTED,		/*!< A Station disconnects to the WizFi360 SoftAP. */
+	WIZFI360_TAG_ID_STA_DISCONNECTED,		/*!< A Station disconnects from the WizFi360 SoftAP. */
 } WIZFI360_TagIdTypeDef;
 
 
@@ -239,8 +241,6 @@ typedef enum
 	WIZFI360_CMD_ID_TEST,				/*!< 	TODO Comment on WIZFI360_CMD_ID_TEST */
 	WIZFI360_CMD_ID_RST,				/*!< 	TODO Comment on WIZFI360_CMD_ID_RST */
 	WIZFI360_CMD_ID_ECHO,				/*!< 	TODO Comment on WIZFI360_CMD_ID_ECHO */
-
-
 } WIZFI360_CommandIdTypeDef;
 
 
@@ -275,6 +275,18 @@ typedef struct __WIZFI360_HandlerTypedef
 	uint8_t WifiState;									/*!< Indicates, weather the module is connected to an AP or not. */
 
 	ring_buffer_t UartRxBuffer;							/*!< TODO: Comment on UartRxBuffer */
+
+
+	char SubTopics[WIZFI360_MAX_SUBTOPIC_CALLBACKS]		/*!< TODO: Comment on SubTopics */
+					  [WIZFI360_MAX_SUBTOPIC_SCAN_LEN];
+
+	void (*SubTopicCallbacks[WIZFI360_MAX_SUBTOPIC_CALLBACKS]) (char*);	/*!< TODO: Comment on SubTopicCallbacks */
+
+	uint8_t SubTopicCharsReceived[WIZFI360_MAX_SUBTOPIC_CALLBACKS];	/*!< TODO: Comment on SubTopicCharsReceived */
+
+	uint8_t NumSubTopicCallbacks;						/*!< TODO: Comment on NumSubTopicCallbacks */
+
+	uint8_t MessageIncoming;
 
 } WIZFI360_HandlerTypedef;
 
@@ -330,6 +342,8 @@ void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId);
 void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size);
 
 void WIZFI360_UART_ByteReceived(const char data);
+
+void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*));
 
 /*********************************************************************************************/
 

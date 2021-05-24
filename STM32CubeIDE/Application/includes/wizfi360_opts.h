@@ -17,13 +17,17 @@
 
 /*********************************************************************************************/
 
-#define WIZFI360_MAX_CMD_LEN 	256
+#define WIZFI360_MAX_CMD_LEN 			256
+
+#define WIZFI360_MAX_SUBTOPIC_LEN		 	36
+#define WIZFI360_MAX_SUBTOPIC_CALLBACKS		16
 
 /*********************************************************************************************/
 
 #define WIZFI360_UART_TX_MODE_NON_BLOCKING
 
 /*********************************************************************************************/
+
 
 #define WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
 //#define WIZFI360_CALLBACK_USED_WIFI_CONNECTED
