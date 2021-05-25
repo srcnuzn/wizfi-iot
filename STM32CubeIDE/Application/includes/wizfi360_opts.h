@@ -3,6 +3,10 @@
  *
  *  Created on: 21.05.2021
  *      Author: serca
+ *
+ *
+ *  TODO: Add Comment for wizfi360_opts.h
+ *
  */
 
 #ifndef INCLUDES_WIZFI360_OPTS_H_

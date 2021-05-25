@@ -34,28 +34,19 @@ static __IO  uint32_t uwNbReceivedChars;
 static uint8_t *pBufferReadyForUser;
 static uint8_t *pBufferReadyForReception;
 
-
 // A pointer to the UART handler used for WizFi360 module communication.
 static UART_HandleTypeDef* pWizFi360_huart = &huart2;
 
 /*********************************************************************************************/
-/* Required Functions -----------------------------------------------------------------------
- *
- *
- *	TODO: Comment on required function implementation
- *
- *
- *
- */
+/* Implementation of required target-specific functions -------------------------------------*/
 
-/*
- *	TODO: Comment on WIZFI360_UART_StartContinousReception
- */
+/**
+  * @brief 	Starts the UART driver in continuous background reception (DMA + IDLE-Event).
+  * @note	This is an example implementation of the required function.
+  * @retval None
+  */
 void WIZFI360_UART_StartContinousReception()
 {
-	// Abort ongoing UART reception
-	HAL_UART_AbortReceive(pWizFi360_huart);
-
 	/* Initializes Buffer swap mechanism (used in User callback) :
 	 - 2 physical buffers aRXBufferA and aRXBufferB (RX_BUFFER_SIZE length)
 	 */
@@ -116,34 +107,45 @@ void WIZFI360_UART_SendBlockingMode(uint8_t* pData, uint16_t Size, uint16_t Time
 }
 #endif
 
-/*
- *	TODO: Comment on WIZFI360_Delay
- */
+/**
+  * @brief 	Provides a minimum delay (in milliseconds).
+  * @note	This is an example implementation of the required function.
+  * @param 	Delay  specifies the delay time length, in milliseconds.
+  * @retval None
+  */
 void WIZFI360_Delay(uint32_t Delay)
 {
 	HAL_Delay(Delay);
 }
 
-
-/*
- *	TODO: Comment on WIZFI360_WriteResetPinLow
- */
+/**
+  * @brief 	Sets the RST pin of the module to low.
+  * @note	This is an example implementation of the required function.
+  * @retval None
+  */
 void WIZFI360_WriteResetPinLow()
 {
 	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_RESET);
 }
 
-/*
- *	TODO: Comment on WIZFI360_WriteResetPinHigh
- */
+/**
+  * @brief 	Sets the RST pin of the module to high.
+  * @note	This is an example implementation of the required function.
+  * @retval None
+  */
 void WIZFI360_WriteResetPinHigh()
 {
 	HAL_GPIO_WritePin(WIZFI360_RST_GPIO_Port, WIZFI360_RST_Pin, GPIO_PIN_SET);
 }
 
-/*
- *	TODO: Comment on WIZFI360_PreResetHard
- */
+/**
+  * @brief 	This function aborts UART and disables UART RX before hard-reset.
+  * @note	Writing the reset pin to low could mess up the STM32 UART drivers.
+  * 		Thus, any UART operation is aborted and the UART reception is disabled,
+  * 		before resetting the wizfi360 module.
+  * @note	This is an example implementation of the required function.
+  * @retval None
+  */
 void WIZFI360_PreResetHard()
 {
 	// Abort ongoing UART transmission
@@ -155,9 +157,11 @@ void WIZFI360_PreResetHard()
 	(pWizFi360_huart)->Instance->CR1 &= ~USART_CR1_RE;
 }
 
-/*
- *	TODO: Comment on WIZFI360_PostResetHard
- */
+/**
+  * @brief 	This function re-enables UART RX after hard-reset.
+  * @note	This is an example implementation of the required function.
+  * @retval None
+  */
 void WIZFI360_PostResetHard()
 {
 	// Enable UART reception
@@ -167,15 +171,14 @@ void WIZFI360_PostResetHard()
 	WIZFI360_UART_StartContinousReception();
 }
 
-
-/******************************************************************************/
+/*********************************************************************************************/
 
 /**
- * @brief  User implementation of the Reception Event Callback
- *         (Rx event notification called after use of advanced reception service).
- * @param  huart UART handle
- * @param  Size  Number of data available in application reception buffer (indicates a position in
- *               reception buffer until which, data are available)
+ * @brief  	Executes, when UART data was received from wizfi360 module.
+ * @note	Pushes received data to wizfi360 UartRxBuffer.
+ * @param  	huart UART handle
+ * @param  	Size  Number of data available in application reception buffer
+ * 				  (indicates a position in reception buffer until which, data are available)
  * @retval None
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
@@ -220,7 +223,8 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 				uwNbReceivedChars += Size;
 			}
 		}
-		/* Process received data that has been extracted from Rx User buffer */
+
+		/* Pass received data to wizfi360 driver */
 		WIZFI360_UART_BytesReceived((char*) pBufferReadyForUser, uwNbReceivedChars);
 
 		/* Swap buffers for next bytes to be processed */
@@ -231,13 +235,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 	/* Update old_pos as new reference of position in User Rx buffer that
 	 indicates position to which data have been processed */
 	old_pos = Size;
-}
-
-
-uint32_t uart_err = 0;
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-	uart_err++;
 }
 
 /******************************************************************************/

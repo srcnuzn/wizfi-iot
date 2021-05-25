@@ -1,8 +1,11 @@
 /*
- * test.h
+ * wizfi360.h
  *
  *  Created on: 29.04.2021
  *      Author: soenk
+ *
+ *  TODO: Add Comment for wizfi360.h
+ *
  */
 
 #ifndef INCLUDES_WIZFI360_H_
@@ -287,25 +290,27 @@ typedef struct __WIZFI360_HandlerTypedef
 
 	WIZFI360_CommandIdTypeDef CommandId;				/*!< Identifies the ongoing/last AT command */
 
-	uint8_t TagCharsReceived[WIZFI360_NUM_TAGS];		/*!< The amount of consecutive tag characters found in UART receive buffer. */
+	uint8_t TagCharsReceived[WIZFI360_NUM_TAGS];		/*!< The amount of consecutive tag characters found in UartRxBuffer. */
 
-	uint8_t EchoCharsReceived;							/*!< The amount of consecutive echo characters found in UART receive buffer. */
+	uint8_t EchoCharsReceived;							/*!< The amount of consecutive echo characters found in UartRxBuffer. */
 
 	uint8_t WifiState;									/*!< Indicates, weather the module is connected to an AP or not. */
 
-	ring_buffer_t UartRxBuffer;							/*!< TODO: Comment on UartRxBuffer */
+	ring_buffer_t UartRxBuffer;							/*!< Ring-buffer for received UART data. */
 
 
-	char SubTopics[WIZFI360_MAX_SUBTOPIC_CALLBACKS]		/*!< TODO: Comment on SubTopics */
+	char SubTopics[WIZFI360_MAX_SUBTOPIC_CALLBACKS]		/*!< List of subscribe-topic strings, that we listen to. */
 					  [WIZFI360_MAX_SUBTOPIC_SCAN_LEN];
 
-	void (*SubTopicCallbacks[WIZFI360_MAX_SUBTOPIC_CALLBACKS]) (char*);	/*!< TODO: Comment on SubTopicCallbacks */
+	void (*SubTopicCallbacks[
+		WIZFI360_MAX_SUBTOPIC_CALLBACKS]) (char*);		/*!< List of callback functions (mapped to SubTopics) */
 
-	uint8_t SubTopicCharsReceived[WIZFI360_MAX_SUBTOPIC_CALLBACKS];	/*!< TODO: Comment on SubTopicCharsReceived */
+	uint8_t SubTopicCharsReceived[
+		WIZFI360_MAX_SUBTOPIC_CALLBACKS];				/*!< Amount of consecutive topic characters found in UartRxBuffer. */
 
-	uint8_t NumSubTopicCallbacks;						/*!< TODO: Comment on NumSubTopicCallbacks */
+	uint8_t NumSubTopicCallbacks;						/*!< Number of subscribe-topics, that we listen to */
 
-	uint8_t MessageIncoming;
+	uint8_t MessageIncoming;							/*!< Indicates, that a subscribe topic was found in UartRxBuffer.  */
 
 } WIZFI360_HandlerTypedef;
 
