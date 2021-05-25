@@ -10,7 +10,6 @@
 
 /* Includes ---------------------------------------------------------------------------------*/
 
-// Used for NULL
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -57,6 +56,8 @@
 
 // The message to publish
 
+// TODO: Cleanup global variables in mqtt.c (e.g. create data structure / handler)
+
 #define MAX_PUB_MSG_SIZE	128
 static char message[MAX_PUB_MSG_SIZE] = { 0 };
 
@@ -86,7 +87,7 @@ static void mqttClientStatemachine_write_inputs();
 /* Public functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Initializes the MqttClient
+  * @brief  Initializes the state-machine-driven MqttClient.
   * @note	This function must be called once in application startup.
   * @retval none
   */
@@ -170,9 +171,16 @@ void MqttClient_PublishString(const char* description, const char* value)
 	jwObj_string( (char*) description, (char*) value);
 }
 
+
 /**
- * TODO:Comment on MqttClient_RegisterSubscribeCallback
- */
+  * @brief  Associates a user defined callback function with a subscribe-topic.
+  * @note   - The topic parameter must be a full topic path (without wildcards)
+  * 		- The callback is called, when the subscribe-topic is received.
+  * 		- This function should be called in MqttClient_RegisterCallbacks.
+  * @param	topic	The topic, that we subscribe to. (must be a '\0' terminated string!)
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
 void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(char*))
 {
 	WIZFI360_RegisterSubTopicCallback(topic, func);

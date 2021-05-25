@@ -31,7 +31,6 @@ static inline void HandleResponse_Fail();
 /* Public function definitions --------------------------------------------------------------*/
 
 /**
- * TODO: 	WIZFI360_AT_Test must be tested.
  * @brief	Tests the WizFi360 communication interface.
  * @retval	None
  */
@@ -848,7 +847,7 @@ void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
  * @brief	Connects to a Broker
  * @note	There must be no ongoing AT command.
  * @note	Whenever messages of subscribe topic is received, it will return as below:
- * 			<subscribe topic> -> "subscribe data"
+ * 			"<subscribe topic> -> subscribe data"
  * @param	authMode		Decides, whether to connect to a broker with/without authentication
  * @param	mqttBrokerIP	string parameter indicating the broker IP address
  * @param	mqttBrokerPort 	the broker port number
@@ -947,9 +946,18 @@ void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
 }
 
 /*
- * TODO: Comment on WIZFI360_AT_MqttDisconnectFromBroker
  * TODO: WIZFI360_AT_MqttDisconnectFromBroker must be tested.
- * TODO: Check if "CLOSE" tag is received, instead of "OK" tag
+ * TODO: Check, what the response to this command might be
+ */
+/**
+ * @brief	Disconnects from a Broker
+ * @note	There must be no ongoing AT command.
+ * @note	Whenever messages of subscribe topic is received, it will return as below:
+ * 			<subscribe topic> -> "subscribe data"
+ * @param	authMode		Decides, whether to connect to a broker with/without authentication
+ * @param	mqttBrokerIP	string parameter indicating the broker IP address
+ * @param	mqttBrokerPort 	the broker port number
+ * @retval	None
  */
 void WIZFI360_AT_MqttDisconnectFromBroker()
 {
@@ -1006,12 +1014,11 @@ void WIZFI360_AT_MqttDisconnectFromBroker()
 
 /**
  * @brief	TODO Comment on WIZFI360_AT_MqttPublishMessage
- * @note	There must be no ongoing AT command.
- * @note	Whenever messages of subscribe topic is received, it will return as below:
- * 			<subscribe topic> -> "subscribe data"
- * @param	authMode		Decides, whether to connect to a broker with/without authentication
- * @param	mqttBrokerIP	string parameter indicating the broker IP address
- * @param	mqttBrokerPort 	the broker port number
+ * @note	- There must be no ongoing AT command.
+ * 			- This command can only be used after MQTT Connection is established.
+ * 			- Topic of published data is defined by AT+MQTTTOPIC.
+ * 			- You should set a topic of publish before connecting to a broker.
+ * @param	message		string parameter defines the message to be published
  * @retval	None
  */
 void WIZFI360_AT_MqttPublishMessage(const char* message)
@@ -1028,8 +1035,7 @@ void WIZFI360_AT_MqttPublishMessage(const char* message)
 		// TODO: Error handling
 	}
 
-
-	// The length of the command (example: AT+MQTTCON=0,"35.156.215.0",1883<CR><LF>)
+	// The length of the command (example: AT+MQTTPUB="HelloWorld!"<CR><LF>)
 	const int cmdLength =
 		strlen("AT+MQTTPUB=")
 		+ 2						// the message is wrapped in quotation marks
@@ -1080,7 +1086,9 @@ void WIZFI360_AT_MqttPublishMessage(const char* message)
 }
 
 /*********************************************************************************************/
-
+/*
+ *	Todo: Comment on WIZFI360_AT_HandleResponse
+ */
 void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId)
 {
 	switch (tagId)
