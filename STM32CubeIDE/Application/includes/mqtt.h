@@ -3,6 +3,9 @@
  *
  *  Created on: 08.05.2021
  *      Author: serca
+ *
+ *      TODO: Add comments for mqtt.h
+ *
  */
 
 #ifndef INCLUDES_MQTT_H_

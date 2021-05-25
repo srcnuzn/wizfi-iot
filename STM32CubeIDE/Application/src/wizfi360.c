@@ -146,7 +146,6 @@ void WIZFI360_ResetHard()
 	WIZFI360_PostResetHard();
 }
 
-
 /**
  * @brief	Returns the state of the module.
  * @retval	The modules state
@@ -221,8 +220,10 @@ void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
 /*********************************************************************************************/
 /* Private functions ---------------------------------------------------------*/
 
-/*
- * TODO: Comment on ResetDataStructure
+
+/**
+ * @brief	Resets the global wizfi360 handler.
+ * @retval	None
  */
 static void ResetDataStructure()
 {
