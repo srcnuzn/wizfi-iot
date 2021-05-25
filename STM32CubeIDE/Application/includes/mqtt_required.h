@@ -9,13 +9,30 @@
 #define INCLUDES_MQTT_REQUIRED_H_
 
 /*********************************************************************************************/
-/* Required functions to be implemented by user ---------------------------------------------*/
+/* Target specific functions to be implemented by user --------------------------------------*/
 
-extern void MqttClient_Publish();
-
+/*
+ * TODO: Comment on MqttClient_GetTick
+ */
 extern uint32_t MqttClient_GetTick();
 
+/*
+ * TODO: Comment on MqttClient_HandleSystemResetRequest
+ */
 extern void MqttClient_HandleSystemResetRequest();
+
+/*********************************************************************************************/
+/* Application specific functions to be implemented by user ---------------------------------*/
+
+/*
+ * TODO: Comment on MqttClient_Publish
+ */
+extern void MqttClient_Publish();
+
+/*
+ * TODO: Comment on MqttClient_RegisterCallbacks
+ */
+extern void MqttClient_RegisterCallbacks();
 
 /*********************************************************************************************/
 

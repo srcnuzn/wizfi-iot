@@ -13,6 +13,7 @@
 // Used for NULL
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "../includes/mqtt.h"
 #include "../includes/mqtt_required.h"
@@ -37,6 +38,19 @@
 // Sample time of mqtt process in milliseconds
 #define SAMPLE_TIME	  100
 
+#ifndef MQTT_PUBTOPIC
+	#define MQTT_PUBTOPIC ""
+#endif
+#ifndef MQTT_SUBTOPIC_1
+	#define MQTT_SUBTOPIC_1 ""
+#endif
+#ifndef MQTT_SUBTOPIC_2
+	#define MQTT_SUBTOPIC_2 ""
+#endif
+#ifndef MQTT_SUBTOPIC_3
+	#define MQTT_SUBTOPIC_3 ""
+#endif
+
 /*********************************************************************************************/
 
 /* Private Variables ------------------------------------------------------------------*/
@@ -59,12 +73,6 @@ static sc_timer_t timers[MAX_TIMERS];
 
 // The timers are managed by a timer service.
 static sc_timer_service_t timer_service;
-
-
-void MqttClient_Publish()
-{
-	MqttClient_PublishInteger("time", MqttClient_GetTick());
-}
 
 /*********************************************************************************************/
 
@@ -162,6 +170,13 @@ void MqttClient_PublishString(const char* description, const char* value)
 	jwObj_string( (char*) description, (char*) value);
 }
 
+/**
+ * TODO:Comment on MqttClient_RegisterSubscribeCallback
+ */
+void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(char*))
+{
+	WIZFI360_RegisterSubTopicCallback(topic, func);
+}
 
 /*********************************************************************************************/
 
@@ -202,7 +217,9 @@ static void mqttClientStatemachine_react_to_events()
 		WIZFI360_Reset();
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_initializeModule(&sm))
+	{
 		WIZFI360_Initialize();
+	}
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_testModule(&sm))
 		WIZFI360_AT_Test();
@@ -224,7 +241,7 @@ static void mqttClientStatemachine_react_to_events()
 				MQTT_CLIENT_ID, MQTT_ALIVE_TIME);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
-		WIZFI360_AT_MqttSetTopic(MQTT_PUB_TOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
+		WIZFI360_AT_MqttSetTopic(MQTT_PUBTOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
 		WIZFI360_AT_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
@@ -318,6 +335,12 @@ void WIZFI360_ModuleReadyCallback()
 	mqttClientStatemachine_WizFi360_raise_ready(&sm);
 }
 
-
+/**
+ *
+ */
+void WIZFI360_RegisterSubscribeCallbacks()
+{
+	MqttClient_RegisterCallbacks();
+}
 
 /*********************************************************************************************/
