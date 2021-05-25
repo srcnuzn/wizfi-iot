@@ -236,11 +236,30 @@ typedef enum
 															<broker port>: the broker port number
 												Response:	OK
 										*/
-	WIZFI360_CMD_ID_MQTTPUB,			/*!< 	TODO Comment on WIZFI360_CMD_ID_MQTTPUB */
-	WIZFI360_CMD_ID_MQTTDIS,			/*!< 	TODO Comment on WIZFI360_CMD_ID_MQTTDIS */
-	WIZFI360_CMD_ID_TEST,				/*!< 	TODO Comment on WIZFI360_CMD_ID_TEST */
-	WIZFI360_CMD_ID_RST,				/*!< 	TODO Comment on WIZFI360_CMD_ID_RST */
-	WIZFI360_CMD_ID_ECHO,				/*!< 	TODO Comment on WIZFI360_CMD_ID_ECHO */
+	WIZFI360_CMD_ID_MQTTPUB,			/*!< 	Publish a message
+												Usage: 	  AT+MQTTDIS
+												Response: CLOSE
+	 	 	 	 	 	 	 	 	 	*/
+	WIZFI360_CMD_ID_MQTTDIS,			/*!< 	Disconnects from a Broker
+												Usage: 	  	AT+MQTTPUB=<message>
+															<message>: string parameter, Publish the message to subscribed Client
+												Response: 	OK
+	 	 	 	 	 	 	 	 	 	*/
+	WIZFI360_CMD_ID_TEST,				/*!< 	Tests AT Startup
+												Usage: 	  AT
+												Response: OK
+	 	 	 	 	 	 	 	 	 	 */
+	WIZFI360_CMD_ID_RST,				/*!< 	: Restarts the module
+												Usage: 	  AT+RST
+												Response: OK
+														  ready
+										*/
+	WIZFI360_CMD_ID_ECHO,				/*!< 	Configure AT Commands Echoing
+												Usage:	ATE<enable>
+														<enable>:
+															• 0: Disable echoing
+															• 1: Enable echoing (default)
+	 	 	 	 	 	 	 	 	 	 */
 } WIZFI360_CommandIdTypeDef;
 
 
@@ -340,8 +359,6 @@ void WIZFI360_AT_MqttPublishMessage(const char* message);
 void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId);
 
 void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size);
-
-void WIZFI360_UART_ByteReceived(const char data);
 
 void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*));
 

@@ -61,7 +61,7 @@ extern void WIZFI360_Delay(uint32_t Delay);
 
 #ifdef WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
 /*
- * TODO: Comment on WIZFI360_Delay
+ * TODO: Comment on WIZFI360_CommandCpltCallback
  */
 extern void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
 		WIZFI360_ResponseTypeDef response);

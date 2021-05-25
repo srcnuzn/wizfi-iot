@@ -44,15 +44,14 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 
 
 /*********************************************************************************************/
-
-/* Private function prototypes -----------------------------------------------*/
+/* Private function prototypes --------------------------------------------------------------*/
 
 static void ResetDataStructure();
 static void ScanBufferForTags(uint8_t tmpChar, int i);
 static void ScanBufferForEcho(uint8_t tmpChar, int i);
 static void ScanBufferForMqttTopics(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
-static void DefaultCallback(char* message);
+static void DefaultSubscribeCallback(char* message);
 
 /*********************************************************************************************/
 
@@ -170,25 +169,28 @@ WIZFI360_WifiState WIZFI360_GetWifiState()
 	return wizfi360.WifiState;
 }
 
-/*
- * TODO: Comment on WIZFI360_UART_BytesReceived
+/**
+ * @brief	Puts received UART-data into ring buffer.
+ * @note	This function must be called by user on  UART data reception
+ * @param	data	Pointer to UART data that is being received.
+ * @param	size	Number of received bytes.
+ * @retval	None
  */
 void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size)
 {
 	ring_buffer_queue_arr(&(wizfi360.UartRxBuffer), data, size);
 }
 
-/*
- * TODO: Comment on WIZFI360_UART_ByteReceived
- */
-void WIZFI360_UART_ByteReceived(const char data)
-{
-	ring_buffer_queue(&(wizfi360.UartRxBuffer), data);
-}
-
-/*
- * TODO: WIZFI360_RegisterSubTopicCallback
- */
+/**
+  * @brief  Associates a user defined callback function with a subscribe-topic.
+  * @note   - The topic parameter must be a full topic path (without wildcards)
+  * 		- The callback is called, when the subscribe-topic is received.
+  * 		- In order to receive the topic, it must be configured in the module using
+  * 		  the WIZFI360_AT_MqttSetTopic command.
+  * @param	topic	The topic, that we subscribe to. (must be a '\0' terminated string!)
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
 void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
 {
 	if (wizfi360.NumSubTopicCallbacks >= WIZFI360_MAX_SUBTOPIC_CALLBACKS)
@@ -219,6 +221,9 @@ void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
 /*********************************************************************************************/
 /* Private functions ---------------------------------------------------------*/
 
+/*
+ * TODO: Comment on ResetDataStructure
+ */
 static void ResetDataStructure()
 {
 	/* Initialize ring buffer */
@@ -257,7 +262,7 @@ static void ResetDataStructure()
 	{
 		wizfi360.SubTopicCharsReceived[topicId] = 0;
 		wizfi360.SubTopics[topicId][0] = '\0';
-		wizfi360.SubTopicCallbacks[topicId] = DefaultCallback;
+		wizfi360.SubTopicCallbacks[topicId] = DefaultSubscribeCallback;
 	}
 
 	WIZFI360_RegisterSubscribeCallbacks();
@@ -360,7 +365,12 @@ static void ScanBufferForTags(uint8_t tmpChar, int i)
 
 
 /**
- * TODO: Comment on ScanBufferForMqttTopics
+ * @brief	Checks if the UART receive buffer contains a message of subscribed topic.
+ * @note	Topics can be received, when we are connected to the broker.
+ * @note	When a topic is received, the associated user-defined callback is called.
+ * @param	tmpChar	The character in UART receive buffer, that is being checked.
+ * @param	i		The index in UART receive buffer that is being checked.
+ * @retval	None
  */
 static void ScanBufferForMqttTopics(uint8_t tmpChar, int i)
 {
@@ -558,10 +568,18 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 }
 
 
+/*********************************************************************************************/
+
 /**
- * TODO: Comment on DefaultCallback
+ * @brief	Default callback for subscribed topics.
+ * @note	- This dummy-function is used, to initialize the SubTopicCallbacks function-array in
+ * 			WIZFI360_HandlerTypedef. If we leave the array uninitialized, memory access violations
+ * 			and undefined behavior might occur.
+ *			- This function should never be called. When it's called, something went wrong.
+ * @param	message	Unused dummy-parameter to avoid compilation errors.
+ * @retval	None
  */
-static void DefaultCallback(char* message)
+static void DefaultSubscribeCallback(char* message)
 {
 
 }
