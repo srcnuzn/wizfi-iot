@@ -25,6 +25,18 @@ void MqttClient_PublishInteger(const char* description, const int value);
 
 void MqttClient_PublishString(const char* description, const char* value);
 
+void MqttClient_PublishDouble(const char* description, const double value);
+
+void MqttClient_PublishBoolean(const char* description, const int oneOrZero);
+
+int MqttClient_ReadInteger(const char* description, const int value);
+
+char* MqttClient_ReadString(const char* description, const char* value);
+
+double MqttClient_ReadDouble(const char* description, const double value);
+
+int MqttClient_ReadBoolean(const char* description, const int value);
+
 /*********************************************************************************************/
 
 #endif /* INCLUDES_MQTT_H_ */

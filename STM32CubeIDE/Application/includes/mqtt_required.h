@@ -36,6 +36,8 @@ extern void MqttClient_HandleSystemResetRequest();
  * 			To write the JSON-message, following functions can be used:
  * 				- MqttClient_PublishInteger
  * 				- MqttClient_PublishString
+ * 				- MqttClient_PublishBoolean
+ * 				- MqttClient_PublishDouble
  * @note	This function is called periodically in MqttClient_Process(), when
  * 			a connection to the broker is established. The publish period can be
  * 			specified by the user-specific definition MQTT_PUBLISH_INTERVAL.
