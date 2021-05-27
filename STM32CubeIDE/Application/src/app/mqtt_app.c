@@ -31,6 +31,8 @@ static void TestTopicReceived(char* message);
  * @note	To adapt the JSON-message, following functions can be used:
  * 				- MqttClient_PublishInteger
  * 				- MqttClient_PublishString
+ * 				- MqttClient_PublishBoolean
+ * 				- MqttClient_PublishDouble
  * @note	This function is called periodically in MqttClient_Process(), when
  * 			a connection to the broker is established. The publish period can be
  * 			specified by the user-specific definition MQTT_PUBLISH_INTERVAL.
@@ -59,11 +61,17 @@ void MqttClient_RegisterCallbacks()
 /*
  * @brief	Callback is fired, when MQTT_SUBTOPIC_1 is received.
  * @note	This is an example function to demonstrate how the callback registration works.
+ * @note	To read the JSON-message, following functions can be used:
+ * 				- MqttClient_ReadInteger
+ * 				- MqttClient_ReadString
+ * 				- MqttClient_ReadBoolean
+ * 				- MqttClient_ReadDouble
  * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
  * @retval	None
  */
 static void TestTopicReceived(char* message)
 {
+	// int a = MqttClient_ReadInteger(message, description);
 	__NOP();
 }
 

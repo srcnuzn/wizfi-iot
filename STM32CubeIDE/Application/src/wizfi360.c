@@ -419,6 +419,7 @@ static void ScanBufferForMqttTopics(uint8_t tmpChar, int i)
 						== strlen(wizfi360.SubTopics[topicId]))
 				{
 					// The length of the topic string.
+					// TODO: What happens, if uart buffer has unhandled bytes?
 					const int length = strlen(wizfi360.SubTopics[topicId]);
 
 					// A dummy storage for the topic string

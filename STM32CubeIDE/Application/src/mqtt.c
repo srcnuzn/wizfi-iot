@@ -40,14 +40,14 @@
 #ifndef MQTT_PUBTOPIC
 	#define MQTT_PUBTOPIC ""
 #endif
-#ifndef MQTT_SUBTOPIC_1
-	#define MQTT_SUBTOPIC_1 ""
+#ifndef MQTT_SUBTOPIC_FILTER_1
+	#define MQTT_SUBTOPIC_FILTER_1 ""
 #endif
-#ifndef MQTT_SUBTOPIC_2
-	#define MQTT_SUBTOPIC_2 ""
+#ifndef MQTT_SUBTOPIC_FILTER_2
+	#define MQTT_SUBTOPIC_FILTER_2 ""
 #endif
-#ifndef MQTT_SUBTOPIC_3
-	#define MQTT_SUBTOPIC_3 ""
+#ifndef MQTT_SUBTOPIC_FILTER_3
+	#define MQTT_SUBTOPIC_FILTER_3 ""
 #endif
 
 /*********************************************************************************************/
@@ -173,13 +173,57 @@ void MqttClient_PublishString(const char* description, const char* value)
 
 
 /**
-  * @brief  Associates a user defined callback function with a subscribe-topic.
-  * @note   - The topic parameter must be a full topic path (without wildcards)
-  * 		- The callback is called, when the subscribe-topic is received.
-  * 		- This function should be called in MqttClient_RegisterCallbacks.
-  * @param	topic	The topic, that we subscribe to. (must be a '\0' terminated string!)
-  * @param	func 	Pointer to the user-defined callback function.
-  * @retval none
+  * TODO: Comment on MqttClient_PublishDouble
+  */
+void MqttClient_PublishDouble(const char* description, const double value)
+{
+	jwObj_double( (char*) description, value);
+}
+
+/**
+  * TODO: Comment on MqttClient_PublishBoolean
+  */
+void MqttClient_PublishBoolean(const char* description, const int oneOrZero)
+{
+	jwObj_bool( (char*) description, oneOrZero);
+}
+
+/**
+  * TODO: Comment on MqttClient_ReadInteger
+  */
+int MqttClient_ReadInteger(const char* description, const int value)
+{
+	return 0;
+}
+
+/**
+  * TODO: Comment on MqttClient_ReadString
+  */
+char* MqttClient_ReadString(const char* description, const char* value)
+{
+	return NULL;
+}
+
+/**
+  * TODO: Comment on MqttClient_ReadDouble
+  */
+double MqttClient_ReadDouble(const char* description, const double value)
+{
+	return 0.0;
+}
+
+
+/**
+  * TODO: Comment on MqttClient_ReadBoolean
+  */
+int MqttClient_ReadBoolean(const char* description, const int value)
+{
+	return 0;
+}
+
+
+/**
+  * TODO: Comment on MqttClient_ReadBoolean
   */
 void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(char*))
 {
@@ -249,7 +293,7 @@ static void mqttClientStatemachine_react_to_events()
 				MQTT_CLIENT_ID, MQTT_ALIVE_TIME);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
-		WIZFI360_AT_MqttSetTopic(MQTT_PUBTOPIC, MQTT_SUBTOPIC_1, NULL, NULL);
+		WIZFI360_AT_MqttSetTopic(MQTT_PUBTOPIC, MQTT_SUBTOPIC_FILTER_1, NULL, NULL);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
 		WIZFI360_AT_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
