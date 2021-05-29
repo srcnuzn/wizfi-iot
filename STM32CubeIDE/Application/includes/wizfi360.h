@@ -354,8 +354,8 @@ void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 		const char* subTopic2, const char* subTopic3);
 
-void WIZFI360_AT_MqttConnectToBroker(uint8_t enable, const char*  mqttBrokerIP,
-		uint16_t mqttBrokerPort);
+void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode, const char*  brokerAddr,
+		uint16_t brokerPort);
 
 void WIZFI360_AT_MqttDisconnectFromBroker();
 
