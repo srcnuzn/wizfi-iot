@@ -173,7 +173,11 @@ void MqttClient_PublishString(const char* description, const char* value)
 
 
 /**
-  * TODO: Comment on MqttClient_PublishDouble
+  * @brief  Writes an double entry into the JSON publish buffer to be sent.
+  * @note   This function has no effect when called outside of MqttClient_Publish().
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)
+  * @param	value 		The value of the JSON entry
+  * @retval none
   */
 void MqttClient_PublishDouble(const char* description, const double value)
 {
@@ -181,7 +185,11 @@ void MqttClient_PublishDouble(const char* description, const double value)
 }
 
 /**
-  * TODO: Comment on MqttClient_PublishBoolean
+  * @brief  Writes an boolean entry into the JSON publish buffer to be sent.
+  * @note   This function has no effect when called outside of MqttClient_Publish().
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)
+  * @param	value 		The value of the JSON entry
+  * @retval none
   */
 void MqttClient_PublishBoolean(const char* description, const int oneOrZero)
 {
@@ -223,7 +231,11 @@ int MqttClient_ReadBoolean(const char* description, const int value)
 
 
 /**
-  * TODO: Comment on MqttClient_ReadBoolean
+  * @brief  Binds a function call to the receival of a topic message
+  * @note   Function func is called with each message of topic
+  * @param	topic Name of the topic to bind the function to
+  * @param	func The function that is called
+  * @retval none
   */
 void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(char*))
 {
