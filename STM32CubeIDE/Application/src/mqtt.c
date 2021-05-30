@@ -27,6 +27,7 @@
 
 // JSON Write library
 #include "../thirdparty/jWrite.h"
+#include "../thirdparty/jRead.h"
 
 
 /*********************************************************************************************/
@@ -189,36 +190,116 @@ void MqttClient_PublishBoolean(const char* description, const int oneOrZero)
 }
 
 /**
-  * TODO: Comment on MqttClient_ReadInteger
+  * @brief  Extracts integer value from MQTT message
+  * @note   Description is case-sensitive
+  * @param	message The received message from the MQTT broker
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @retval Integer value that is held in entry with name 'description'
   */
-int MqttClient_ReadInteger(const char* description, const int value)
+int MqttClient_ReadInteger(const char* message, const char* description)
 {
-	return 0;
+	// Build identifier according to description and layer depth
+	const char * identifier = JRead_BuildIdentifier(description, 0);
+	
+	// Query parameter is NULL (normal query)
+	int data = jRead_int( message, identifier, NULL );
+	return data;
 }
 
 /**
-  * TODO: Comment on MqttClient_ReadString
+  * @brief  Extracts string value from MQTT message
+  * @note   Description is case-sensitive
+  * @param	message The received message from the MQTT broker
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @retval String value that is held in entry with name 'description'
   */
-char* MqttClient_ReadString(const char* description, const char* value)
+char* MqttClient_ReadString(const char* message, const char* description)
 {
-	return NULL;
+	// Build identifier according to description and layer depth
+	const char * identifier = JRead_BuildIdentifier(description, 0);
+	
+	// Query parameter is NULL (normal query)
+	char * data = jRead( message, identifier, NULL );
+	return data;
 }
 
 /**
-  * TODO: Comment on MqttClient_ReadDouble
+  * @brief  Extracts double value from MQTT message
+  * @note   Description is case-sensitive
+  * @param	message The received message from the MQTT broker
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @retval Double value that is held in entry with name 'description'
   */
-double MqttClient_ReadDouble(const char* description, const double value)
+double MqttClient_ReadDouble(const char* message, const char* description)
 {
-	return 0.0;
+	// Build identifier according to description and layer depth
+	const char* identifier = JRead_BuildIdentifier(description, 0);
+	
+	// Query parameter is NULL (normal query)
+	double data = jRead_double( message, identifier, NULL );
+	return data;
 }
 
 
 /**
-  * TODO: Comment on MqttClient_ReadBoolean
+  * @brief  Extracts boolean value from MQTT message
+  * @note   Description is case-sensitive
+  * @param	message The received message from the MQTT broker
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @retval Boolean value that is held in entry with name 'description'
   */
-int MqttClient_ReadBoolean(const char* description, const int value)
+int MqttClient_ReadBoolean(const char* message, const char* description)
 {
-	return 0;
+	// Build identifier according to description and layer depth
+	const char* identifier = JRead_BuildIdentifier(description, 0);
+	
+	// Query parameter is NULL (normal query)
+	uint8_t data = jRead_int( message, identifier, NULL );
+	return data;
+}
+
+
+/**
+  * @brief  Builds a jRead identifier with the required syntax
+  * @note   This function needs to be handed the correct layer value of the JSON entry
+  * @param	description The description of the JSON entry (must be a '\0' terminated string!)
+  * @param	layer The layer of the JSON entry, e.g. {0 {1 {2 {3 } } } }
+  * @retval Composed identifier matching the description & layer
+  */
+char* JRead_BuildIdentifier(const char* description, uint8_t layer)
+{
+	char* prefix;
+	char* suffix;
+
+	// Compose control prefix & suffix according to layer depth
+	switch(layer)
+	{
+		case 0:
+			prefix = "{'";
+			suffix = "'";
+			break;
+		case 1:
+			// TODO: Parse JSON entries of multi layer nested JSONs
+			break;
+		case 2:
+			break;
+		default:
+			break;
+	}
+
+	// Measure identifier length
+	const int identLen =
+		strlen(prefix) +
+		strlen(description) +
+		strlen(suffix);
+	char identifier[identLen];
+
+	// Concatenate description with control prefix & suffix
+	strcat(identifier, prefix);
+	strcat(identifier, description);
+	strcat(identifier, suffix);
+		
+	return identifier;
 }
 
 
