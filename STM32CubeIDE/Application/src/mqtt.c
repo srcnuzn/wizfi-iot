@@ -114,6 +114,7 @@ void MqttClient_Initialize()
 	last_time = MqttClient_GetTick();
 }
 
+
 /**
   * @brief  The mqtt client process.
   * @note   This function must be called continuously in the main application.
@@ -148,6 +149,7 @@ void MqttClient_Process()
 	}
 }
 
+
 /**
   * @brief  Writes an integer entry into the JSON publish buffer to be sent.
   * @note   This function has no effect when called outside of MqttClient_Publish().
@@ -159,6 +161,7 @@ void MqttClient_PublishInteger(const char* description, const int value)
 {
 	jwObj_int( (char*) description, value);
 }
+
 
 /**
   * @brief  Writes a string entry into the JSON publish buffer to be sent.
@@ -181,6 +184,7 @@ void MqttClient_PublishDouble(const char* description, const double value)
 	jwObj_double( (char*) description, value);
 }
 
+
 /**
   * TODO: Comment on MqttClient_PublishBoolean
   */
@@ -189,51 +193,90 @@ void MqttClient_PublishBoolean(const char* description, const int oneOrZero)
 	jwObj_bool( (char*) description, oneOrZero);
 }
 
+
 /**
   * @brief  Extracts integer value from MQTT message
   * @note   Description is case-sensitive
   * @param	message The received message from the MQTT broker
-  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @param	description The full description of the JSON entry 
+  * 					this has to include every parent entry name
+  * 					(must be a '\0' terminated string!)
+  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   * @retval Integer value that is held in entry with name 'description'
   */
-int MqttClient_ReadInteger(const char* message, const char* description)
+int MqttClient_ReadInteger(const char* message, const char* description, uint8_t layer)
 {
-	// Build identifier according to description and layer depth
-	const char * identifier = JRead_BuildIdentifier(description, 0);
+	// Estimate identifier length
+	const int identLen =
+		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
+				// taking into account formatting starting at lowest layer
+		strlen(description) +
+				// length of the full entry path
+		1;		// length of trailing '
+	char identifier[identLen];
+	
+	// Build identifier according to description and layer depth	
+	JRead_BuildIdentifier(description, &identifier, layer);
 	
 	// Query parameter is NULL (normal query)
 	int data = jRead_int( message, identifier, NULL );
 	return data;
 }
 
+
 /**
   * @brief  Extracts string value from MQTT message
   * @note   Description is case-sensitive
   * @param	message The received message from the MQTT broker
-  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @param	description The full description of the JSON entry 
+  * 					this has to include every parent entry name
+  * 					(must be a '\0' terminated string!)
+  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   * @retval String value that is held in entry with name 'description'
   */
-char* MqttClient_ReadString(const char* message, const char* description)
+char* MqttClient_ReadString(const char* message, const char* description, uint8_t layer)
 {
-	// Build identifier according to description and layer depth
-	const char * identifier = JRead_BuildIdentifier(description, 0);
+	// Estimate identifier length
+	const int identLen =
+		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
+				// taking into account formatting starting at lowest layer
+		strlen(description) +
+				// length of the full entry path
+		1;		// length of trailing '
+	char identifier[identLen];
+	
+	// Build identifier according to description and layer depth	
+	JRead_BuildIdentifier(description, &identifier, layer);
 	
 	// Query parameter is NULL (normal query)
 	char * data = jRead( message, identifier, NULL );
 	return data;
 }
 
+
 /**
   * @brief  Extracts double value from MQTT message
   * @note   Description is case-sensitive
   * @param	message The received message from the MQTT broker
-  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @param	description The full description of the JSON entry 
+  * 					this has to include every parent entry name
+  * 					(must be a '\0' terminated string!)
+  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   * @retval Double value that is held in entry with name 'description'
   */
-double MqttClient_ReadDouble(const char* message, const char* description)
+double MqttClient_ReadDouble(const char* message, const char* description, uint8_t layer)
 {
-	// Build identifier according to description and layer depth
-	const char* identifier = JRead_BuildIdentifier(description, 0);
+	// Estimate identifier length
+	const int identLen =
+		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
+				// taking into account formatting starting at lowest layer
+		strlen(description) +
+				// length of the full entry path
+		1;		// length of trailing '
+	char identifier[identLen];
+	
+	// Build identifier according to description and layer depth	
+	JRead_BuildIdentifier(description, &identifier, layer);
 	
 	// Query parameter is NULL (normal query)
 	double data = jRead_double( message, identifier, NULL );
@@ -245,16 +288,28 @@ double MqttClient_ReadDouble(const char* message, const char* description)
   * @brief  Extracts boolean value from MQTT message
   * @note   Description is case-sensitive
   * @param	message The received message from the MQTT broker
-  * @param	description The description of the JSON entry (must be a '\0' terminated string!)  
+  * @param	description The full description of the JSON entry 
+  * 					this has to include every parent entry name
+  * 					(must be a '\0' terminated string!)
+  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   * @retval Boolean value that is held in entry with name 'description'
   */
-int MqttClient_ReadBoolean(const char* message, const char* description)
-{
-	// Build identifier according to description and layer depth
-	const char* identifier = JRead_BuildIdentifier(description, 0);
+int MqttClient_ReadBoolean(const char* message, const char* description, uint8_t layer)
+{	
+	// Estimate identifier length
+	const int identLen =
+		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
+				// taking into account formatting starting at lowest layer
+		strlen(description) +
+				// length of the full entry path
+		1;		// length of trailing '
+	char identifier[identLen];
+	
+	// Build identifier according to description and layer depth	
+	JRead_BuildIdentifier(description, &identifier, layer);
 	
 	// Query parameter is NULL (normal query)
-	uint8_t data = jRead_int( message, identifier, NULL );
+	uint8_t data = jRead_int(message, identifier, NULL);
 	return data;
 }
 
@@ -263,10 +318,10 @@ int MqttClient_ReadBoolean(const char* message, const char* description)
   * @brief  Builds a jRead identifier with the required syntax
   * @note   This function needs to be handed the correct layer value of the JSON entry
   * @param	description The description of the JSON entry (must be a '\0' terminated string!)
-  * @param	layer The layer of the JSON entry, e.g. {0 {1 {2 {3 } } } }
-  * @retval Composed identifier matching the description & layer
+  * @param	ident_out Composed identifier matching the description & layer
+  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   */
-char* JRead_BuildIdentifier(const char* description, uint8_t layer)
+void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer)
 {
 	char* prefix;
 	char* suffix;
@@ -287,19 +342,10 @@ char* JRead_BuildIdentifier(const char* description, uint8_t layer)
 			break;
 	}
 
-	// Measure identifier length
-	const int identLen =
-		strlen(prefix) +
-		strlen(description) +
-		strlen(suffix);
-	char identifier[identLen];
-
 	// Concatenate description with control prefix & suffix
-	strcat(identifier, prefix);
-	strcat(identifier, description);
-	strcat(identifier, suffix);
-		
-	return identifier;
+	strcat(ident_out, prefix);
+	strcat(ident_out, description);
+	strcat(ident_out, suffix);
 }
 
 
