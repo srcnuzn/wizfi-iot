@@ -12,6 +12,8 @@
 #define INCLUDES_MQTT_H_
 
 /*********************************************************************************************/
+// TODO: Check if include is needed.
+#include <stdint.h>
 
 void MqttClient_Initialize();
 
