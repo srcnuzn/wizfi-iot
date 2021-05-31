@@ -25,6 +25,11 @@
  */
 extern void WIZFI360_UART_StartContinousReception();
 
+/*
+ * TODO: Comment on WIZFI360_UART_Stop
+ */
+extern void WIZFI360_UART_Stop();
+
 #ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 /**
  * @brief	Must send an amount of data to WizFi360 module in interrupt mode.
@@ -88,36 +93,6 @@ extern void WIZFI360_PostResetHard();
   * @retval None
   */
 extern void WIZFI360_Delay(uint32_t Delay);
-
-/*********************************************************************************************/
-/* User specific callback functions to be implemented ---------------------------------------*/
-
-// Todo: Provide wizfi360 callback registration for user (instead of extern declaration)
-
-#ifdef WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
-extern void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
-		WIZFI360_ResponseTypeDef response);
-#endif
-
-#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
-extern void WIZFI360_WifiConnectedCallback();
-#endif
-
-#ifdef WIZFI360_CALLBACK_USED_WIFI_DISCONNECTED
-extern void WIZFI360_WifiDisconnectedCallback();
-#endif
-
-#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECT_FAILED
-extern void WIZFI360_WifiConnectFailedCallback();
-#endif
-
-#ifdef WIZFI360_CALLBACK_USED_MODULE_READY
-extern void WIZFI360_ModuleReadyCallback();
-#endif
-
-extern void WIZFI360_RegisterSubscribeCallbacks();
-
-/*********************************************************************************************/
 
 
 #endif /* INCLUDES_WIZFI360_REQUIRED_H_ */

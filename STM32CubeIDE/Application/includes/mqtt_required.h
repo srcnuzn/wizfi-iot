@@ -57,7 +57,7 @@ extern void MqttClient_Publish();
  * 				- MqttClient_RegisterSubscribeCallback
  * @retval	None
  */
-extern void MqttClient_RegisterCallbacks();
+extern void MqttClient_RegisterUserCallbacks();
 
 /*********************************************************************************************/
 

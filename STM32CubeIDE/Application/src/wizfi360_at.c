@@ -1161,11 +1161,8 @@ static inline void HandleResponse_Ok()
 
 	}
 
-	// Notify User.
-	#ifdef WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
-	WIZFI360_CommandCpltCallback(wizfi360.CommandId,
-			WIZFI360_RESPONSE_OK);
-	#endif
+	// Fire Callback.
+	wizfi360.CommandOkCallback();
 }
 
 
@@ -1177,11 +1174,8 @@ static inline void HandleResponse_Error()
 {
 	wizfi360.ExpectingResponse = 0;
 
-	// Notify User.
-	#ifdef WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
-	WIZFI360_CommandCpltCallback(wizfi360.CommandId,
-			WIZFI360_RESPONSE_ERROR);
-	#endif
+	// Fire callback.
+	wizfi360.CommandErrorCallback();
 }
 
 /**
@@ -1199,10 +1193,8 @@ static inline void HandleResponse_Fail()
 		wizfi360.ExpectingResponse = 0;
 	}
 
-	// Notify User.
-	#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECT_FAILED
-	WIZFI360_WifiConnectFailedCallback();
-	#endif
+	// Fire callback.
+	wizfi360.WifiConnectFailedCallback();
 }
 
 /*********************************************************************************************/

@@ -9,19 +9,34 @@
 #include "gtest/gtest.h"
 
 extern "C" {
-#include "wizfi360.h"
+
+	#include "wizfi360.h"
+
+	extern WIZFI360_HandlerTypedef wizfi360;
 }
 
-extern WIZFI360_HandlerTypedef wizfi360;
+class Wizfi360Test: public ::testing::Test
+{
+	public:
+	Wizfi360Test( ) {
+	       // initialization code here
+	   }
 
-TEST(WIZFI360_Initialize, struct_fields_as_expected) {
+	   void SetUp( ) {
+			WIZFI360_Initialize();
+	   }
 
-	WIZFI360_Initialize();
+	   void TearDown( ) {
+	       // code here will be called just after the test completes
+	       // ok to through exceptions from here if need be
+	   }
 
-	ASSERT_EQ(wizfi360.CommandBuffer[0], '\0');
-	ASSERT_EQ(wizfi360.CommandLength, 0);
-	ASSERT_EQ(wizfi360.ExpectingEcho, 0);
-	ASSERT_EQ(wizfi360.ExpectingResponse, 0);
-	ASSERT_EQ(wizfi360.UartRxBuffer.head_index, 0u);
-	ASSERT_EQ(wizfi360.UartRxBuffer.tail_index, 0u);
-}
+	   ~Wizfi360Test( )  {
+	       // cleanup any pending stuff, but no exceptions allowed
+	   }
+
+	   // put in any custom data members that you need
+};
+
+
+
