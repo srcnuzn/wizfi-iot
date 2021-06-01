@@ -120,12 +120,6 @@ typedef enum
 	WIZFI360_STATE_UNKNOWN,				/*!< The modules state is unknown. */
 } WIZFI360_State;
 
-typedef enum
-{
-	WIZFI360_RESPONSE_OK,
-	WIZFI360_RESPONSE_ERROR
-} WIZFI360_ResponseTypeDef;
-
 /**
   * @brief WIZFI360 mode definition
   */
