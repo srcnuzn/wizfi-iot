@@ -31,17 +31,11 @@ void MqttClient_PublishString(const char* description, const char* value);
 
 void MqttClient_PublishDouble(const char* description, const double value);
 
-void MqttClient_PublishBoolean(const char* description, const int oneOrZero);
+int MqttClient_ReadInteger(const char* message, const char* description);
 
-int MqttClient_ReadBoolean(const char* message, const char* description, uint8_t layer);
+int MqttClient_ReadString(const char* message, const char* description, int destLen, char* result);
 
-char* MqttClient_ReadString(const char* message, const char* description, uint8_t layer);
-
-double MqttClient_ReadDouble(const char* message, const char* description, uint8_t layer);
-
-int MqttClient_ReadBoolean(const char* message, const char* description, uint8_t layer);
-
-void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer);
+double MqttClient_ReadDouble(const char* message, const char* description);
 
 /*********************************************************************************************/
 

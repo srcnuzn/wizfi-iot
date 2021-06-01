@@ -82,6 +82,7 @@ static sc_timer_service_t timer_service;
 
 static void mqttClientStatemachine_react_to_events();
 static void mqttClientStatemachine_write_inputs();
+void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer);
 
 /*********************************************************************************************/
 
@@ -201,11 +202,11 @@ void MqttClient_PublishBoolean(const char* description, const int oneOrZero)
   * @param	description The full description of the JSON entry 
   * 					this has to include every parent entry name
   * 					(must be a '\0' terminated string!)
-  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   * @retval Integer value that is held in entry with name 'description'
   */
-int MqttClient_ReadInteger(const char* message, const char* description, uint8_t layer)
+int MqttClient_ReadInteger(const char* message, const char* description)
 {
+	const int layer = 0; // Only layer depth 0 supported
 	// Estimate identifier length
 	const int identLen =
 		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
@@ -216,10 +217,10 @@ int MqttClient_ReadInteger(const char* message, const char* description, uint8_t
 	char identifier[identLen];
 	
 	// Build identifier according to description and layer depth	
-	JRead_BuildIdentifier(description, &identifier, layer);
+	JRead_BuildIdentifier(description, identifier, layer);
 	
 	// Query parameter is NULL (normal query)
-	int data = jRead_int( message, identifier, NULL );
+	int data = jRead_int( (char*)message, identifier, NULL );
 	return data;
 }
 
@@ -231,11 +232,14 @@ int MqttClient_ReadInteger(const char* message, const char* description, uint8_t
   * @param	description The full description of the JSON entry 
   * 					this has to include every parent entry name
   * 					(must be a '\0' terminated string!)
-  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
-  * @retval String value that is held in entry with name 'description'
+  * @param	destLen The preallocated length of the result char array
+  * @param	result The destination char array to the String value
+  * 		that is held in entry with name 'description' into
+  * @retval 1 if success, -1 if read error
   */
-char* MqttClient_ReadString(const char* message, const char* description, uint8_t layer)
+int MqttClient_ReadString(const char* message, const char* description, int destlen, char* pDest)
 {
+	const int layer = 0; // Only layer depth 0 supported
 	// Estimate identifier length
 	const int identLen =
 		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
@@ -246,11 +250,27 @@ char* MqttClient_ReadString(const char* message, const char* description, uint8_
 	char identifier[identLen];
 	
 	// Build identifier according to description and layer depth	
-	JRead_BuildIdentifier(description, &identifier, layer);
-	
-	// Query parameter is NULL (normal query)
-	char * data = jRead( message, identifier, NULL );
-	return data;
+	JRead_BuildIdentifier(description, identifier, layer);
+
+	// Read jRead result struct
+	struct jReadElement jResult;
+	jRead( (char*)message, identifier, &jResult);
+
+	// Check for memory error (+1 for \0-Termination)
+	if(jResult.bytelen + 1 > destlen)
+	{
+		// TODO: Error Handling (Memory Error)
+		return -1;
+	}
+
+	for(int i = 0; i < jResult.bytelen; i++)
+	{
+		pDest[i] = ((char*)jResult.pValue)[i];
+	}
+
+	// Make sure to teminate the string with '\0'
+	pDest[jResult.bytelen] = '\0';
+	return 1;
 }
 
 
@@ -261,11 +281,11 @@ char* MqttClient_ReadString(const char* message, const char* description, uint8_
   * @param	description The full description of the JSON entry 
   * 					this has to include every parent entry name
   * 					(must be a '\0' terminated string!)
-  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
   * @retval Double value that is held in entry with name 'description'
   */
-double MqttClient_ReadDouble(const char* message, const char* description, uint8_t layer)
+double MqttClient_ReadDouble(const char* message, const char* description)
 {
+	const int layer = 0; // Only layer depth 0 supported
 	// Estimate identifier length
 	const int identLen =
 		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
@@ -276,40 +296,10 @@ double MqttClient_ReadDouble(const char* message, const char* description, uint8
 	char identifier[identLen];
 	
 	// Build identifier according to description and layer depth	
-	JRead_BuildIdentifier(description, &identifier, layer);
+	JRead_BuildIdentifier(description, identifier, layer);
 	
 	// Query parameter is NULL (normal query)
-	double data = jRead_double( message, identifier, NULL );
-	return data;
-}
-
-
-/**
-  * @brief  Extracts boolean value from MQTT message
-  * @note   Description is case-sensitive
-  * @param	message The received message from the MQTT broker
-  * @param	description The full description of the JSON entry 
-  * 					this has to include every parent entry name
-  * 					(must be a '\0' terminated string!)
-  * @param	layer The layer depth of the JSON entry, e.g. {0 {1 {2 {3 } } } }  
-  * @retval Boolean value that is held in entry with name 'description'
-  */
-int MqttClient_ReadBoolean(const char* message, const char* description, uint8_t layer)
-{	
-	// Estimate identifier length
-	const int identLen =
-		(layer+1) * MQTT_JSON_FORMATTING_OVERHEAD + 
-				// taking into account formatting starting at lowest layer
-		strlen(description) +
-				// length of the full entry path
-		1;		// length of trailing '
-	char identifier[identLen];
-	
-	// Build identifier according to description and layer depth	
-	JRead_BuildIdentifier(description, &identifier, layer);
-	
-	// Query parameter is NULL (normal query)
-	uint8_t data = jRead_int(message, identifier, NULL);
+	double data = jRead_double( (char*)message, identifier, NULL );
 	return data;
 }
 
@@ -323,6 +313,8 @@ int MqttClient_ReadBoolean(const char* message, const char* description, uint8_t
   */
 void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer)
 {
+	// Make sure to start at position 0 of string
+	ident_out[0] = '\0';
 	char* prefix;
 	char* suffix;
 
