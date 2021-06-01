@@ -46,12 +46,21 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 /*********************************************************************************************/
 /* Private function prototypes --------------------------------------------------------------*/
 
-static void ResetDataStructure();
+static void ResetModuleState();
+static void ResetCommunicationState();
+static void InitializeCallbacksToDefault();
 static void ScanBufferForTags(uint8_t tmpChar, int i);
 static void ScanBufferForEcho(uint8_t tmpChar, int i);
 static void ScanBufferForMqttTopics(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
-static void DefaultSubscribeCallback(char* message);
+
+void DefaultSubscribeCallback(char* message);
+void DefaultCommandOkCallback(void);
+void DefaultCommandErrorCallback(void);
+void DefaultCommandFailCallback(void);
+void DefaultReadyCallback(void);
+void DefaultWifiConnectedCallback(void);
+void DefaultWifiDisconnectedCallback(void);
 
 /*********************************************************************************************/
 
@@ -77,10 +86,32 @@ WIZFI360_HandlerTypedef wizfi360;
 void WIZFI360_Initialize()
 {
 	// Reset the wizfi360 data structure.
-	ResetDataStructure();
+	ResetModuleState();
+
+	ResetCommunicationState();
+
+	InitializeCallbacksToDefault();
+}
+
+/*
+ * TODO: Comment on WIZFI360_Start
+ */
+void WIZFI360_Start()
+{
+	ResetModuleState();
+
+	ResetCommunicationState();
 
 	// Call user specific function
 	WIZFI360_UART_StartContinousReception();
+}
+
+/*
+ * TODO: Comment on WIFI360_Stop
+ */
+void WIZFI360_Stop()
+{
+	WIZFI360_UART_Stop();
 }
 
 /**
@@ -117,32 +148,17 @@ void WIZFI360_Process()
 }
 
 /**
- * @brief	Resets the WizFi360 module
- * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
- * @retval	None
- */
-void WIZFI360_Reset()
-{
-	#ifdef WIZFI360_EVB_MINI
-		WIZFI360_ResetHard();
-	#elif WIZFI360_EVB_SHIELD
-		WIZFI360_AT_ResetModule();
-	#endif
-}
-
-/**
  * @brief	Resets the WizFi360 module using the Reset Pin
  * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
  * @retval	None
  */
-void WIZFI360_ResetHard()
+void WIZFI360_Reset()
 {
 	WIZFI360_PreResetHard();
 	WIZFI360_WriteResetPinLow();
 	WIZFI360_Delay(1);
 	WIZFI360_WriteResetPinHigh();
 	WIZFI360_Delay(10);
-
 	WIZFI360_PostResetHard();
 }
 
@@ -179,6 +195,8 @@ void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size)
 {
 	ring_buffer_queue_arr(&(wizfi360.UartRxBuffer), data, size);
 }
+
+/*********************************************************************************************/
 
 /**
   * @brief  Associates a user defined callback function with a subscribe-topic.
@@ -217,6 +235,54 @@ void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
 	wizfi360.NumSubTopicCallbacks++;
 }
 
+/*
+ * TODO: Comment on WIZFI360_RegisterCommandOkCallback
+ */
+void WIZFI360_RegisterCommandOkCallback(void (*func)(void))
+{
+	wizfi360.CommandOkCallback = func;
+}
+
+/*
+ * TODO: Comment on WIZFI360_RegisterCommandErrorCallback
+ */
+void WIZFI360_RegisterCommandErrorCallback(void (*func)(void))
+{
+	wizfi360.CommandErrorCallback = func;
+}
+
+/*
+ * TODO: Comment on WIZFI360_RegisterReadyCallback
+ */
+void WIZFI360_RegisterReadyCallback(void (*func)(void))
+{
+	wizfi360.ReadyCallback = func;
+}
+
+/*
+ * TODO: Comment on WIZFI360_RegisterWifiConnectFailedCallback
+ */
+void WIZFI360_RegisterWifiConnectFailedCallback(void (*func)(void))
+{
+	wizfi360.WifiConnectFailedCallback= func;
+}
+
+/*
+ * TODO: Comment on WIZFI360_RegisterWifiConnectedCallback
+ */
+void WIZFI360_RegisterWifiConnectedCallback(void (*func)(void))
+{
+	wizfi360.WifiConnectedCallback= func;
+}
+
+/*
+ * TODO: Comment on WIZFI360_RegisterWifiDisconnectedCallback
+ */
+void WIZFI360_RegisterWifiDisconnectedCallback(void (*func)(void))
+{
+	wizfi360.WifiConnectedCallback= func;
+}
+
 /*********************************************************************************************/
 /* Private functions ---------------------------------------------------------*/
 
@@ -225,49 +291,68 @@ void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
  * @brief	Resets the global wizfi360 handler.
  * @retval	None
  */
-static void ResetDataStructure()
+static void ResetModuleState()
 {
-	/* Initialize ring buffer */
-	ring_buffer_init(&(wizfi360.UartRxBuffer));
-
 	wizfi360.WifiMode = WIZFI360_MODE_STATION;
 
 	wizfi360.EchoMode = WIZFI360_ECHO_ENABLE;
 
-	wizfi360.ExpectingResponse = 0;
-
-	wizfi360.ExpectingEcho = 0;
-
 	wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
+}
 
-	wizfi360.CommandBuffer[0] = '\0';
+/**
+ * @brief	Resets the global wizfi360 handler.
+ * @retval	None
+ */
+static void ResetCommunicationState()
+{
+	/* Initialize ring buffer */
+	ring_buffer_init(&(wizfi360.UartRxBuffer));
 
-	wizfi360.CommandLength = 0;
-
-	wizfi360.CommandId = -1;
+	wizfi360.MessageIncoming = 0;
 
 	wizfi360.EchoCharsReceived = 0;
-
-	// TODO: Improve data structure reset for registered subtopic callbacks
-	// >>>>>>>
-	wizfi360.MessageIncoming = 0;
 
 	for (int tagId = 0; tagId < WIZFI360_NUM_TAGS; tagId++)
 	{
 		wizfi360.TagCharsReceived[tagId] = 0;
 	}
 
+	for (int topicId = 0; topicId < WIZFI360_MAX_SUBTOPIC_CALLBACKS; topicId++)
+	{
+		wizfi360.SubTopicCharsReceived[topicId] = 0;
+	}
+
+	wizfi360.ExpectingResponse = 0;
+	wizfi360.ExpectingEcho = 0;
+
+	wizfi360.CommandBuffer[0] = '\0';
+	wizfi360.CommandLength = 0;
+	wizfi360.CommandId = -1;
+}
+
+
+static void InitializeCallbacksToDefault()
+{
 	wizfi360.NumSubTopicCallbacks = 0;
 
 	for (int topicId = 0; topicId < WIZFI360_MAX_SUBTOPIC_CALLBACKS; topicId++)
 	{
-		wizfi360.SubTopicCharsReceived[topicId] = 0;
 		wizfi360.SubTopics[topicId][0] = '\0';
 		wizfi360.SubTopicCallbacks[topicId] = DefaultSubscribeCallback;
 	}
 
-	WIZFI360_RegisterSubscribeCallbacks();
-	// <<<<<<<
+	wizfi360.CommandOkCallback = DefaultCommandOkCallback;
+
+	wizfi360.CommandErrorCallback = DefaultCommandErrorCallback;
+
+	wizfi360.WifiConnectFailedCallback = DefaultCommandFailCallback;
+
+	wizfi360.ReadyCallback = DefaultReadyCallback;
+
+	wizfi360.WifiConnectedCallback = DefaultWifiConnectedCallback;
+
+	wizfi360.WifiDisconnectedCallback = DefaultWifiDisconnectedCallback;
 }
 
 
@@ -498,7 +583,6 @@ static void ScanBufferForMqttTopics(uint8_t tmpChar, int i)
 				cr_found = 0;
 			}
 		}
-
 	}
 }
 
@@ -534,20 +618,16 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_READY:
 		{
-			ResetDataStructure();
-
-			#ifdef WIZFI360_CALLBACK_USED_MODULE_READY
-			WIZFI360_ModuleReadyCallback();
-			#endif
-
+			ResetModuleState();
+			// Fire callback.
+			wizfi360.ReadyCallback();
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_CONNECTED:
 		{
 			wizfi360.WifiState = WIZFI360_WIFI_CONNECTED;
-			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
-			WIZFI360_WifiConnectedCallback();
-			#endif
+			// Fire callback.
+			wizfi360.WifiConnectedCallback();
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_GOT_IP:
@@ -557,9 +637,8 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		case WIZFI360_TAG_ID_WIFI_DISCONNECT:
 		{
 			wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
-			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
-			WIZFI360_WifiDisconnectedCallback();
-			#endif
+			// Fire callback.
+			wizfi360.WifiDisconnectedCallback();
 			break;
 		}
 		default:
@@ -581,9 +660,39 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
  * @param	message	Unused dummy-parameter to avoid compilation errors.
  * @retval	None
  */
-static void DefaultSubscribeCallback(char* message)
+void DefaultSubscribeCallback(char* message)
 {
+	// Do nothing.
+}
 
+void DefaultCommandOkCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultCommandErrorCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultCommandFailCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultReadyCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultWifiConnectedCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultWifiDisconnectedCallback(void)
+{
+	// Do nothing.
 }
 
 /*********************************************************************************************/

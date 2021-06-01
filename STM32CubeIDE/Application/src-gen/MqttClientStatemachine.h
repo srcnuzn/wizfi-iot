@@ -47,7 +47,7 @@ extern "C" {
 */
 
 /*! Define number of states in the state enum */
-#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 19
+#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 20
 
 /*! Define dimension of the state configuration vector for orthogonal states. */
 #define MQTTCLIENTSTATEMACHINE_MAX_ORTHOGONAL_STATES 1
@@ -61,7 +61,8 @@ extern "C" {
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_TESTMODULE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_RESTARTMODULE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_RESETSYSTEM 0
-#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_INITIALIZE 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_START 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_STOP 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_CONNECTTOBROKER 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_ENTRY 0
@@ -85,7 +86,8 @@ typedef enum
 	MqttClientStatemachine_main_region_Undefined_r1_TestModule,
 	MqttClientStatemachine_main_region_Undefined_r1_RestartModule,
 	MqttClientStatemachine_main_region_Undefined_r1_ResetSystem,
-	MqttClientStatemachine_main_region_Undefined_r1_Initialize,
+	MqttClientStatemachine_main_region_Undefined_r1_Start,
+	MqttClientStatemachine_main_region_Undefined_r1_Stop,
 	MqttClientStatemachine_main_region_Online,
 	MqttClientStatemachine_main_region_Online_r1_ConnectToBroker,
 	MqttClientStatemachine_main_region_Online_r1_Entry,
@@ -141,10 +143,12 @@ struct MqttClientStatemachineIfaceWizFi360
 	sc_boolean testModule_raised;
 	sc_observable restartModule;
 	sc_boolean restartModule_raised;
-	sc_observable initializeModule;
-	sc_boolean initializeModule_raised;
 	sc_observable resetModule;
 	sc_boolean resetModule_raised;
+	sc_observable start;
+	sc_boolean start_raised;
+	sc_observable stop;
+	sc_boolean stop_raised;
 	sc_boolean ok_raised;
 	sc_boolean error_raised;
 	sc_boolean fail_raised;
@@ -319,17 +323,23 @@ extern sc_observable* mqttClientStatemachine_WizFi360_get_restartModule(MqttClie
 /*! Checks if the out event 'restartModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_restartModule(const MqttClientStatemachine* handle);
 
-/*! Returns the observable for the out event 'initializeModule' that is defined in the interface scope 'WizFi360'. */ 
-extern sc_observable* mqttClientStatemachine_WizFi360_get_initializeModule(MqttClientStatemachine* handle);
-
-/*! Checks if the out event 'initializeModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
-extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_initializeModule(const MqttClientStatemachine* handle);
-
 /*! Returns the observable for the out event 'resetModule' that is defined in the interface scope 'WizFi360'. */ 
 extern sc_observable* mqttClientStatemachine_WizFi360_get_resetModule(MqttClientStatemachine* handle);
 
 /*! Checks if the out event 'resetModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_resetModule(const MqttClientStatemachine* handle);
+
+/*! Returns the observable for the out event 'start' that is defined in the interface scope 'WizFi360'. */ 
+extern sc_observable* mqttClientStatemachine_WizFi360_get_start(MqttClientStatemachine* handle);
+
+/*! Checks if the out event 'start' that is defined in the interface scope 'WizFi360' has been raised. */ 
+extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_start(const MqttClientStatemachine* handle);
+
+/*! Returns the observable for the out event 'stop' that is defined in the interface scope 'WizFi360'. */ 
+extern sc_observable* mqttClientStatemachine_WizFi360_get_stop(MqttClientStatemachine* handle);
+
+/*! Checks if the out event 'stop' that is defined in the interface scope 'WizFi360' has been raised. */ 
+extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_stop(const MqttClientStatemachine* handle);
 
 /*! Raises the in event 'ok' that is defined in the interface scope 'WizFi360'. */ 
 extern void mqttClientStatemachine_WizFi360_raise_ok(MqttClientStatemachine* handle);

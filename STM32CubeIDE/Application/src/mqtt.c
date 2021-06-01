@@ -51,6 +51,7 @@
 	#define MQTT_SUBTOPIC_FILTER_3 ""
 #endif
 
+
 /*********************************************************************************************/
 
 /* Private Variables ------------------------------------------------------------------*/
@@ -84,6 +85,11 @@ static void mqttClientStatemachine_react_to_events();
 static void mqttClientStatemachine_write_inputs();
 void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer);
 
+static void ATCommandOkCallback();
+static void ATCommandErrorCallback();
+static void WifiConnectFailedCallback();
+static void WlanModuleReadyCallback();
+
 /*********************************************************************************************/
 
 /* Public functions ---------------------------------------------------------*/
@@ -95,6 +101,15 @@ void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t lay
   */
 void MqttClient_Initialize()
 {
+	WIZFI360_Initialize();
+
+	WIZFI360_RegisterCommandOkCallback(ATCommandOkCallback);
+	WIZFI360_RegisterCommandErrorCallback(ATCommandErrorCallback);
+	WIZFI360_RegisterReadyCallback(WlanModuleReadyCallback);
+	WIZFI360_RegisterWifiConnectFailedCallback(WifiConnectFailedCallback);
+
+	MqttClient_RegisterUserCallbacks();
+
 	// Initialize timer services used for state machine timer events
  	sc_timer_service_init(&timer_service, timers, MAX_TIMERS,
 	        (sc_raise_time_event_fp) &mqttClientStatemachine_raise_time_event);
@@ -399,11 +414,14 @@ static void mqttClientStatemachine_react_to_events()
 	else if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
 		WIZFI360_Reset();
 
-	else if (mqttClientStatemachine_WizFi360_is_raised_initializeModule(&sm))
+	else if (mqttClientStatemachine_WizFi360_is_raised_start(&sm))
 	{
-		WIZFI360_Initialize();
+		WIZFI360_Start();
 	}
-
+	else if (mqttClientStatemachine_WizFi360_is_raised_stop(&sm))
+	{
+		WIZFI360_Stop();
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_testModule(&sm))
 		WIZFI360_AT_Test();
 
@@ -477,32 +495,21 @@ void mqttClientStatemachine_unset_timer(MqttClientStatemachine *handle,
 
 /* Callback functions ---------------------------------------------------------*/
 
-/**
-  * @brief	Executes when a response from wizfi360 module to an AT-command is received.
-  * @retval None
-  */
-void WIZFI360_CommandCpltCallback(WIZFI360_CommandIdTypeDef command,
-        WIZFI360_ResponseTypeDef response)
+static void ATCommandOkCallback()
 {
-	// If we received OK...
-	if (response == WIZFI360_RESPONSE_OK)
-	{
-		// Raise the statemachine "ok" event.
-		mqttClientStatemachine_WizFi360_raise_ok(&sm);
-	}
-	// If we did not receive OK...
-	else
-	{
-		// Raise the statemachine "error" event.
-		mqttClientStatemachine_WizFi360_raise_error(&sm);
-	}
+	mqttClientStatemachine_WizFi360_raise_ok(&sm);
+}
+
+static void ATCommandErrorCallback()
+{
+	mqttClientStatemachine_WizFi360_raise_error(&sm);
 }
 
 /**
   * @brief	Executes when a wizfi360 module sends notification, that WiFi connection failed.
   * @retval None
   */
-void WIZFI360_WifiConnectFailedCallback()
+static void WifiConnectFailedCallback()
 {
 	// Raise the statemachine "fail" event.
 	mqttClientStatemachine_WizFi360_raise_fail(&sm);
@@ -512,18 +519,10 @@ void WIZFI360_WifiConnectFailedCallback()
   * @brief	Executes when a wizfi360 module sends notification, that module is ready and listens.
   * @retval None
   */
-void WIZFI360_ModuleReadyCallback()
+static void WlanModuleReadyCallback()
 {
 	// Raise the statemachine "fail" event.
 	mqttClientStatemachine_WizFi360_raise_ready(&sm);
-}
-
-/**
- *
- */
-void WIZFI360_RegisterSubscribeCallbacks()
-{
-	MqttClient_RegisterCallbacks();
 }
 
 /*********************************************************************************************/

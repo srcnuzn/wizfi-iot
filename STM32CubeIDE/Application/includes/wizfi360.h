@@ -294,23 +294,37 @@ typedef struct __WIZFI360_HandlerTypedef
 
 	uint8_t EchoCharsReceived;							/*!< The amount of consecutive echo characters found in UartRxBuffer. */
 
+	uint8_t SubTopicCharsReceived[
+		WIZFI360_MAX_SUBTOPIC_CALLBACKS];				/*!< Amount of consecutive topic characters found in UartRxBuffer. */
+
 	uint8_t WifiState;									/*!< Indicates, weather the module is connected to an AP or not. */
 
 	ring_buffer_t UartRxBuffer;							/*!< Ring-buffer for received UART data. */
 
+	uint8_t MessageIncoming;							/*!< Indicates, that a subscribe topic was found in UartRxBuffer.  */
+
+	uint8_t NumSubTopicCallbacks;						/*!< Number of subscribe-topics, that we listen to */
 
 	char SubTopics[WIZFI360_MAX_SUBTOPIC_CALLBACKS]		/*!< List of subscribe-topic strings, that we listen to. */
 					  [WIZFI360_MAX_SUBTOPIC_SCAN_LEN];
 
+	/* Callbacks ----------------------------------------------------------------------------------------------------------*/
+
 	void (*SubTopicCallbacks[
 		WIZFI360_MAX_SUBTOPIC_CALLBACKS]) (char*);		/*!< List of callback functions (mapped to SubTopics) */
 
-	uint8_t SubTopicCharsReceived[
-		WIZFI360_MAX_SUBTOPIC_CALLBACKS];				/*!< Amount of consecutive topic characters found in UartRxBuffer. */
+	void (*CommandOkCallback)(void);
 
-	uint8_t NumSubTopicCallbacks;						/*!< Number of subscribe-topics, that we listen to */
+	void (*CommandErrorCallback)(void);
 
-	uint8_t MessageIncoming;							/*!< Indicates, that a subscribe topic was found in UartRxBuffer.  */
+	void (*ReadyCallback)(void);
+
+	void (*WifiConnectFailedCallback)(void);
+
+	void (*WifiConnectedCallback)(void);
+
+	void (*WifiDisconnectedCallback)(void);
+
 
 } WIZFI360_HandlerTypedef;
 
@@ -320,13 +334,13 @@ typedef struct __WIZFI360_HandlerTypedef
 
 void WIZFI360_Initialize();
 
+void WIZFI360_Start();
+
+void WIZFI360_Stop();
+
 void WIZFI360_Process();
 
 void WIZFI360_Reset();
-
-void WIZFI360_ResetHard();
-
-void WIZFI360_AT_Restart();
 
 WIZFI360_State WIZFI360_GetState();
 
@@ -366,6 +380,12 @@ void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId);
 void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size);
 
 void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*));
+void WIZFI360_RegisterCommandOkCallback(void (*func)(void));
+void WIZFI360_RegisterCommandErrorCallback(void (*func)(void));
+void WIZFI360_RegisterReadyCallback(void (*func)(void));
+void WIZFI360_RegisterWifiConnectFailedCallback(void (*func)(void));
+void WIZFI360_RegisterWifiConnectedCallback(void (*func)(void));
+void WIZFI360_RegisterWifiDisconnectedCallback(void (*func)(void));
 
 /*********************************************************************************************/
 

@@ -48,7 +48,7 @@ void MqttClient_Publish()
  * 				- MqttClient_RegisterSubscribeCallback
  * @retval	None
  */
-void MqttClient_RegisterCallbacks()
+void MqttClient_RegisterUserCallbacks()
 {
 	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_1, TestTopicReceived);
 }

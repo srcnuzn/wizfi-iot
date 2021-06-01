@@ -32,13 +32,4 @@
 
 /*********************************************************************************************/
 
-
-#define WIZFI360_CALLBACK_USED_COMMAND_COMPLETE
-//#define WIZFI360_CALLBACK_USED_WIFI_CONNECTED
-//#define WIZFI360_CALLBACK_USED_WIFI_DISCONNECTED
-#define WIZFI360_CALLBACK_USED_WIFI_CONNECT_FAILED
-#define WIZFI360_CALLBACK_USED_MODULE_READY
-
-/*********************************************************************************************/
-
 #endif /* INCLUDES_WIZFI360_OPTS_H_ */
