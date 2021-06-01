@@ -28,7 +28,13 @@
 		<link>
 			<name>Application</name>
 			<type>2</type>
-			<location>C:/Users/serca/Desktop/github_tmp/wizfi-iot/STM32CubeIDE/Application</location>
+			<locationURI>APPLICATION_LOC</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>APPLICATION_LOC</name>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/STM32CubeIDE/Application</value>
+		</variable>
+	</variableList>
 </projectDescription>
