@@ -57,6 +57,10 @@
                                     								
                                 </option>
                                 								
+                                <option id="gnu.c.compiler.option.debugging.other.407663151" name="Other debugging flags" superClass="gnu.c.compiler.option.debugging.other" useByScannerDiscovery="false" value="-fprofile-arcs -ftest-coverage" valueType="string"/>
+                                								
+                                <option id="gnu.c.compiler.option.debugging.codecov.28206535" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.c.compiler.option.debugging.codecov" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                								
                                 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1073604693" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
                                 							
                             </tool>
@@ -79,6 +83,12 @@
                                     								
                                 </option>
                                 								
+                                <option id="gnu.cpp.compiler.option.debugging.codecov.113688218" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.cpp.compiler.option.debugging.codecov" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                								
+                                <option id="gnu.cpp.compiler.option.dialect.std.2138855223" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+                                								
+                                <option id="gnu.cpp.compiler.option.debugging.other.1415176520" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" useByScannerDiscovery="false" value="-fprofile-arcs -ftest-coverage" valueType="string"/>
+                                								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.598777539" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
                                 							
                             </tool>
@@ -86,6 +96,10 @@
                             <tool id="cdt.managedbuild.tool.gnu.cross.c.linker.200563487" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
                             							
                             <tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.290350182" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+                                								
+                                <option id="gnu.cpp.link.option.flags.1058855310" name="Linker flags" superClass="gnu.cpp.link.option.flags" useByScannerDiscovery="false" value="-lgcov --coverage" valueType="string"/>
+                                								
+                                <option id="gnu.cpp.link.option.debugging.codecov.2070968048" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.cpp.link.option.debugging.codecov" value="true" valueType="boolean"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1977413171" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
                                     									
@@ -111,11 +125,11 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="Dummy|Application" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+                        <entry excluding="Tests|mqtt_tests|wizfi360_tests|Dummy|Application" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
                         						
                         <entry excluding="src/target|src/app" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Application"/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Dummy"/>
+                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Tests"/>
                         					
                     </sourceEntries>
                     				
@@ -211,9 +225,9 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="Dummy|Application/src/target|Application/src/app" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+                        <entry excluding="Tests|mqtt_tests|wizfi360_tests|Dummy|Application/src/target|Application/src/app" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Dummy"/>
+                        <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Tests"/>
                         					
                     </sourceEntries>
                     				

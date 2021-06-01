@@ -6,7 +6,7 @@
  */
 
 
-#include "gtest/gtest.h"
+#include "../gtest/gtest.h"
 
 extern "C" {
 

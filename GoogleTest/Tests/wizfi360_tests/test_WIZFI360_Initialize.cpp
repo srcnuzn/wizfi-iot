@@ -6,7 +6,7 @@
  */
 
 
-#include "gtest/gtest.h"
+#include "../gtest/gtest.h"
 
 extern "C" {
 
@@ -24,7 +24,7 @@ extern "C" {
 }
 
 
-TEST(Wizfi360InitializeTest, CommandBufferIsReset) {
+TEST(CommandIsSet, CommandBufferGetsReset) {
 
 	wizfi360.CommandBuffer[0] = 'A';
 	wizfi360.CommandLength = 32;
@@ -38,7 +38,7 @@ TEST(Wizfi360InitializeTest, CommandBufferIsReset) {
 }
 
 
-TEST(Wizfi360InitializeTest, CallbacksInitializeToDefault) {
+TEST(CallbacksAreSetToNull, CallbacksGetInitializedToDefault) {
 
 	for (int i = 0; i < WIZFI360_MAX_SUBTOPIC_CALLBACKS; i++)
 	{
