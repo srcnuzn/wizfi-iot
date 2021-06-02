@@ -80,6 +80,8 @@ TEST(WIZFI360_Initialize, ScanVariablesReset) {
 	}
 
 	wizfi360.MessageIncoming = 1;
+	wizfi360.receivingTopic = 12;
+	wizfi360.cr_found = 1;
 
 	WIZFI360_Initialize();
 
@@ -96,6 +98,10 @@ TEST(WIZFI360_Initialize, ScanVariablesReset) {
 	}
 
 	ASSERT_FALSE(wizfi360.MessageIncoming);
+
+	ASSERT_EQ(wizfi360.receivingTopic, 0);
+
+	ASSERT_FALSE(wizfi360.cr_found);
 }
 
 

@@ -304,6 +304,11 @@ typedef struct __WIZFI360_HandlerTypedef
 	char SubTopics[WIZFI360_MAX_SUBTOPIC_CALLBACKS]		/*!< List of subscribe-topic strings, that we listen to. */
 					  [WIZFI360_MAX_SUBTOPIC_SCAN_LEN];
 
+	int receivingTopic;
+
+	int cr_found;
+
+
 	/* Callbacks ----------------------------------------------------------------------------------------------------------*/
 
 	void (*SubTopicCallbacks[

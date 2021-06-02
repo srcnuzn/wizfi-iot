@@ -16,11 +16,11 @@ extern "C" {
 static int execution_ctr;
 static char received_msg[128];
 
-static const char subtopic[] = "test-topic/sensor/value";
+static const char subtopic[] = "test-topic/sensor";
 static const char subtopic_msg[] = "subtopic message";
 
-static const char another_subtopic[] = "test-topic/sensor/another_value";
-static const char another_subtopic_msg[] = "another subtopic message";
+static const char another_subtopic[] = "test-topic/another_sensor";
+static const char another_subtopic_msg[] = "another subtopic message was received";
 
 class test_WIZFI360_RegisterSubTopicCallback : public ::testing::Test
 {
@@ -92,7 +92,7 @@ TEST_F(test_WIZFI360_RegisterSubTopicCallback, MultipleTopicsReceived_Registered
 	WIZFI360_UART_BytesReceived(subtopic_msg, strlen(subtopic_msg));
 	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 		WIZFI360_Process();
 
 
@@ -113,13 +113,16 @@ TEST_F(test_WIZFI360_RegisterSubTopicCallback, MultipleTopicsReceived_Registered
 	WIZFI360_UART_BytesReceived(subtopic_msg, strlen(subtopic_msg));
 	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 		WIZFI360_Process();
 
 	WIZFI360_UART_BytesReceived(another_subtopic, strlen(another_subtopic));
 	WIZFI360_UART_BytesReceived(" -> ", strlen(" -> "));
 	WIZFI360_UART_BytesReceived(another_subtopic_msg, strlen(another_subtopic_msg));
 	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
+
+	for (int i = 0; i < 10; i++)
+		WIZFI360_Process();
 
 	ASSERT_EQ(execution_ctr, 1);
 	ASSERT_STREQ(received_msg, subtopic_msg);
@@ -142,7 +145,7 @@ TEST_F(test_WIZFI360_RegisterSubTopicCallback, MultipleTopicsReceived_Registered
 	WIZFI360_UART_BytesReceived(another_subtopic_msg, strlen(another_subtopic_msg));
 	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 		WIZFI360_Process();
 
 	ASSERT_EQ(execution_ctr, 1);
@@ -162,13 +165,16 @@ TEST_F(test_WIZFI360_RegisterSubTopicCallback, MultipleTopicsReceived_Registered
 	WIZFI360_UART_BytesReceived(another_subtopic_msg, strlen(another_subtopic_msg));
 	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 		WIZFI360_Process();
 
 	WIZFI360_UART_BytesReceived(subtopic, strlen(subtopic));
 	WIZFI360_UART_BytesReceived(" -> ", strlen(" -> "));
 	WIZFI360_UART_BytesReceived(subtopic_msg, strlen(subtopic_msg));
 	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
+
+	for (int i = 0; i < 10; i++)
+		WIZFI360_Process();
 
 	ASSERT_EQ(execution_ctr, 1);
 	ASSERT_STREQ(received_msg, subtopic_msg);
