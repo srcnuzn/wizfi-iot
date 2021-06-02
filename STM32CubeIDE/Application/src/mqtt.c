@@ -39,16 +39,10 @@
 #define SAMPLE_TIME	  100
 
 #ifndef MQTT_PUBTOPIC
-	#define MQTT_PUBTOPIC ""
+	#error("MQTT_PUBTOPIC must be defined!");
 #endif
-#ifndef MQTT_SUBTOPIC_FILTER_1
-	#define MQTT_SUBTOPIC_FILTER_1 ""
-#endif
-#ifndef MQTT_SUBTOPIC_FILTER_2
-	#define MQTT_SUBTOPIC_FILTER_2 ""
-#endif
-#ifndef MQTT_SUBTOPIC_FILTER_3
-	#define MQTT_SUBTOPIC_FILTER_3 ""
+#ifndef MQTT_SUBTOPIC_FILTER
+	#error("MQTT_SUBTOPIC_FILTER must be defined!");
 #endif
 
 
@@ -442,7 +436,7 @@ static void mqttClientStatemachine_react_to_events()
 				MQTT_CLIENT_ID, MQTT_ALIVE_TIME);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
-		WIZFI360_AT_MqttSetTopic(MQTT_PUBTOPIC, MQTT_SUBTOPIC_FILTER_1, NULL, NULL);
+		WIZFI360_AT_MqttSetTopic(MQTT_PUBTOPIC, MQTT_SUBTOPIC_FILTER);
 
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
 		WIZFI360_AT_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
