@@ -23,7 +23,7 @@
 
 #define WIZFI360_MAX_CMD_LEN 				256
 
-#define WIZFI360_MAX_SUBTOPIC_LEN		 	36
+#define WIZFI360_MAX_SUBTOPIC_LEN		 	64
 #define WIZFI360_MAX_SUBTOPIC_CALLBACKS		16
 
 /*********************************************************************************************/
