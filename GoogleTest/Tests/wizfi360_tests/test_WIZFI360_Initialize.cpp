@@ -24,7 +24,7 @@ extern "C" {
 }
 
 
-TEST(CommandIsSet, CommandBufferGetsReset) {
+TEST(WIZFI360_Initialize, CommandBufferGetsReset) {
 
 	wizfi360.CommandBuffer[0] = 'A';
 	wizfi360.CommandLength = 32;
@@ -38,7 +38,7 @@ TEST(CommandIsSet, CommandBufferGetsReset) {
 }
 
 
-TEST(CallbacksAreSetToNull, CallbacksGetInitializedToDefault) {
+TEST(WIZFI360_Initialize, CallbacksInitializeToDefault) {
 
 	for (int i = 0; i < WIZFI360_MAX_SUBTOPIC_CALLBACKS; i++)
 	{
@@ -65,5 +65,43 @@ TEST(CallbacksAreSetToNull, CallbacksGetInitializedToDefault) {
 	ASSERT_EQ(wizfi360.WifiDisconnectedCallback, DefaultWifiDisconnectedCallback);
 }
 
+TEST(WIZFI360_Initialize, ScanVariablesReset) {
+
+	wizfi360.EchoCharsReceived = 10;
+
+	for (int i = 0; i < WIZFI360_NUM_TAGS; i++)
+	{
+		wizfi360.TagCharsReceived[i] = i+1;
+	}
+
+	for (int i = 0; i < WIZFI360_MAX_SUBTOPIC_CALLBACKS; i++)
+	{
+		wizfi360.SubTopicCharsReceived[i] = i+1;
+	}
+
+	wizfi360.MessageIncoming = 1;
+	wizfi360.receivingTopic = 12;
+	wizfi360.cr_found = 1;
+
+	WIZFI360_Initialize();
+
+	ASSERT_EQ(wizfi360.EchoCharsReceived, 0);
+
+	for (int i = 0; i < WIZFI360_NUM_TAGS; i++)
+	{
+		ASSERT_EQ(wizfi360.TagCharsReceived[i], 0);
+	}
+
+	for (int i = 0; i < WIZFI360_MAX_SUBTOPIC_CALLBACKS; i++)
+	{
+		ASSERT_EQ(wizfi360.SubTopicCharsReceived[i], 0);
+	}
+
+	ASSERT_FALSE(wizfi360.MessageIncoming);
+
+	ASSERT_EQ(wizfi360.receivingTopic, 0);
+
+	ASSERT_FALSE(wizfi360.cr_found);
+}
 
 

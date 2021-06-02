@@ -297,10 +297,17 @@ typedef struct __WIZFI360_HandlerTypedef
 
 	uint8_t MessageIncoming;							/*!< Indicates, that a subscribe topic was found in UartRxBuffer.  */
 
+	uint8_t MessageStartIndex;							/*!< The index, at which the message starts  */
+
 	uint8_t NumSubTopicCallbacks;						/*!< Number of subscribe-topics, that we listen to */
 
 	char SubTopics[WIZFI360_MAX_SUBTOPIC_CALLBACKS]		/*!< List of subscribe-topic strings, that we listen to. */
 					  [WIZFI360_MAX_SUBTOPIC_SCAN_LEN];
+
+	int receivingTopic;
+
+	int cr_found;
+
 
 	/* Callbacks ----------------------------------------------------------------------------------------------------------*/
 
