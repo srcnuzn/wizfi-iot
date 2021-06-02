@@ -98,6 +98,17 @@ typedef enum
 	WIZFI360_TAG_ID_STA_DISCONNECTED,		/*!< A Station disconnects from the WizFi360 SoftAP. */
 } WIZFI360_TagIdTypeDef;
 
+/**
+  * @brief WIZFI360 Status definitions
+  */
+typedef enum
+{
+	WIZFI360_OK,			/*!< Disable Command Echos */
+	WIZFI360_BUSY,			/*!< Disable Command Echos */
+	WIZFI360_ERROR,			/*!< Enable Command Echos */
+	WIZFI360_TIMEOUT,		/*!< Enable Command Echos */
+}WIZFI360_StatusTypeDef;
+
 
 /**
   * @brief WIZFI360 mode definition
@@ -347,34 +358,33 @@ WIZFI360_State WIZFI360_GetState();
 
 WIZFI360_WifiState WIZFI360_GetWifiState();
 
-void WIZFI360_AT_Test();
+WIZFI360_StatusTypeDef WIZFI360_AT_Test();
 
-void WIZFI360_AT_Restart();
+WIZFI360_StatusTypeDef WIZFI360_AT_Restart();
 
-void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode);
+WIZFI360_StatusTypeDef WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode);
 
-void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* password);
+WIZFI360_StatusTypeDef WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* password);
 
-void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode);
+WIZFI360_StatusTypeDef WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode);
 
-void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
+WIZFI360_StatusTypeDef WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp);
 
-void WIZFI360_AT_GetSSLCertificate();
+WIZFI360_StatusTypeDef WIZFI360_AT_GetSSLCertificate();
 
-void WIZFI360_AT_SetSSLCertificate();
+WIZFI360_StatusTypeDef WIZFI360_AT_SetSSLCertificate();
 
-void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
+WIZFI360_StatusTypeDef WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 		const char* clientId, uint16_t aliveTime );
 
-void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
-		const char* subTopic2, const char* subTopic3);
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic);
 
-void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode, const char*  brokerAddr,
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode, const char*  brokerAddr,
 		uint16_t brokerPort);
 
-void WIZFI360_AT_MqttDisconnectFromBroker();
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttDisconnectFromBroker();
 
-void WIZFI360_AT_MqttPublishMessage(const char* message);
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttPublishMessage(const char* message);
 
 void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId);
 

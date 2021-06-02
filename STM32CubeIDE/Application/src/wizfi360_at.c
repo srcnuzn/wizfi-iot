@@ -35,12 +35,12 @@ static inline void HandleResponse_Fail();
  * @brief	Tests the WizFi360 communication interface.
  * @retval	None
  */
-void WIZFI360_AT_Test()
+WIZFI360_StatusTypeDef WIZFI360_AT_Test()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command (example: ATE1<CR><LF>)
@@ -51,7 +51,7 @@ void WIZFI360_AT_Test()
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -86,18 +86,20 @@ void WIZFI360_AT_Test()
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 /**
  * @brief	Restarts the WizFi360 module.
  * @retval	None
  */
-void WIZFI360_AT_Restart()
+WIZFI360_StatusTypeDef WIZFI360_AT_Restart()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command (example: ATE1<CR><LF>)
@@ -108,7 +110,7 @@ void WIZFI360_AT_Restart()
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -142,6 +144,8 @@ void WIZFI360_AT_Restart()
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 
@@ -149,12 +153,12 @@ void WIZFI360_AT_Restart()
  * @brief	Enables/Disables AT command echos.
  * @retval	None
  */
-void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode)
+WIZFI360_StatusTypeDef WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command (example: ATE1<CR><LF>)
@@ -167,7 +171,7 @@ void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode)
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -220,6 +224,8 @@ void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode)
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 
@@ -231,18 +237,18 @@ void WIZFI360_AT_SetEchoMode(WIZFI360_EchoModeTypeDef mode)
  * @param	pwd    string parameter, the password of the target AP, MAX: 64-byte ASCII.
  * @retval	None
  */
-void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
+WIZFI360_StatusTypeDef WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// If the module is not in station mode...
 	if (wizfi360.WifiMode != WIZFI360_MODE_STATION)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// The length of the ssid
@@ -251,7 +257,7 @@ void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	// If the SSID is too long...
 	if (ssidLength > WIZFI360_MAX_AP_SSID_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// The length of the password
@@ -260,7 +266,7 @@ void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	// If the password is too long
 	if (pwdLength > WIZFI360_MAX_AP_PWD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// The length of the command (example: AT+CWJAP_CUR="ssid","pwd"<CR><LF>)
@@ -274,7 +280,7 @@ void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -316,6 +322,7 @@ void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+	return WIZFI360_OK;
 }
 
 /**
@@ -324,12 +331,12 @@ void WIZFI360_AT_ConnectToAccessPoint(const char* ssid, const char* pwd)
  * @param	mode   The mode to be set.
  * @retval	None
  */
-void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode)
+WIZFI360_StatusTypeDef WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command
@@ -341,7 +348,7 @@ void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode)
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -377,7 +384,7 @@ void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode)
 		}
 		default:
 		{
-			// TODO: Error handling
+			return WIZFI360_ERROR;
 		}
 	}
 
@@ -402,6 +409,7 @@ void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode)
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+	return WIZFI360_OK;
 }
 
 
@@ -412,12 +420,12 @@ void WIZFI360_AT_SetWifiMode(WIZFI360_WifiModeTypeDef mode)
  * @param	dhcp   The DHCP setting (enabled/disbaled)
  * @retval	None
  */
-void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp)
+WIZFI360_StatusTypeDef WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTypeDef dhcp)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command
@@ -431,7 +439,7 @@ void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTyp
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -469,7 +477,7 @@ void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTyp
 		}
 		default:
 		{
-			// TODO: Error handling
+			return WIZFI360_ERROR;
 		}
 	}
 
@@ -492,7 +500,7 @@ void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTyp
 		}
 		default:
 		{
-			// TODO: Error handling
+			return WIZFI360_ERROR;
 		}
 	}
 
@@ -518,6 +526,8 @@ void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTyp
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 
@@ -527,12 +537,12 @@ void WIZFI360_AT_SetDhcpMode(WIZFI360_WifiModeTypeDef mode, WIZFI360_DhcpModeTyp
  * @param	None
  * @retval	None
  */
-void WIZFI360_AT_SetSSLCertificate()
+WIZFI360_StatusTypeDef WIZFI360_AT_SetSSLCertificate()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// TODO Finish setting SSL cert function
@@ -547,7 +557,7 @@ void WIZFI360_AT_SetSSLCertificate()
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -584,6 +594,7 @@ void WIZFI360_AT_SetSSLCertificate()
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+	return WIZFI360_OK;
 }
 
 
@@ -593,12 +604,12 @@ void WIZFI360_AT_SetSSLCertificate()
  * @param	None
  * @retval	None
  */
-void WIZFI360_AT_GetSSLCertificate()
+WIZFI360_StatusTypeDef WIZFI360_AT_GetSSLCertificate()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command
@@ -609,7 +620,7 @@ void WIZFI360_AT_GetSSLCertificate()
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -646,6 +657,7 @@ void WIZFI360_AT_GetSSLCertificate()
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+	return WIZFI360_OK;
 }
 
 
@@ -659,13 +671,13 @@ void WIZFI360_AT_GetSSLCertificate()
  * @param	aliveTime   keep-alive time setting with the broker within the range of 30s~300s.
  * @retval	None
  */
-void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
+WIZFI360_StatusTypeDef WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 		const char* clientId, uint16_t aliveTime )
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the user name
@@ -674,7 +686,7 @@ void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 	// If the userName is too long...
 	if (userNameLength > WIZFI360_MAX_MQTT_USERNAME_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// The length of the mqtt password
@@ -683,7 +695,7 @@ void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 	// If the password is too long
 	if (pwdLength > WIZFI360_MAX_MQTT_PWD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// TODO: Check aliveTime range
@@ -694,7 +706,7 @@ void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 	// If the clientId is too long...
 	if (clientIdLength > WIZFI360_MAX_MQTT_CLIENTID_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Build string from alive time
@@ -717,7 +729,7 @@ void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -765,25 +777,26 @@ void WIZFI360_AT_ConfigureMqtt(const char* userName, const char*  pwd,
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 
 /**
- * TODO: 	Implement usage of subTopic2/subtopic3 (depending of number subscribed topics (DEFINE))
  * @brief	Sets the Topic of Publish and Subscribe
  * @note	This command should be set before connecting to a broker.
  * @note	There must be no ongoing AT command.
  * @param	pubTopic	string parameter, The topic published on the WizFi360
- * @param	subscribeTopic 	string parameter, The topic subscribed by the WizFi360
+ * @param	subTopic 	string parameter, The topic subscribed by the WizFi360
  * @retval	None
  */
-void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
-		const char* subTopic2, const char* subTopic3)
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic)
 {
+
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command (example: AT+MQTTTOPIC="pubTopic","subTopic1","SubTopic2","SubTopic3"<CR><LF>)
@@ -793,13 +806,13 @@ void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 		+ 2						// each subscribeTopic is wrapped in quotation marks
 		+ 1						// topics are separated by this amount of commas
 		+ strlen(pubTopic)
-		+ strlen(subTopic1)
+		+ strlen(subTopic)
 		+ 2;					// command ends with <CR><LF>
-
+	
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -818,7 +831,7 @@ void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, ",");
 	strcat(wizfi360.CommandBuffer, "\"");
-	strcat(wizfi360.CommandBuffer, subTopic1);
+	strcat(wizfi360.CommandBuffer, subTopic);
 	strcat(wizfi360.CommandBuffer, "\"");
 	strcat(wizfi360.CommandBuffer, "\r\n");
 
@@ -841,6 +854,8 @@ void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 /**
@@ -853,19 +868,19 @@ void WIZFI360_AT_MqttSetTopic(const char* pubTopic, const char*  subTopic1,
  * @param	brrokerPort 	the broker port number
  * @retval	None
  */
-void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
 		const char*  brokerAddr, uint16_t brokerPort)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// If the module is not in connected to wifi...
 	if (wizfi360.WifiState != WIZFI360_WIFI_CONNECTED)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Build string from alive time
@@ -885,7 +900,7 @@ void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -914,7 +929,7 @@ void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
 		}
 		default:
 		{
-			// TODO: Error handling
+			return WIZFI360_ERROR;
 		}
 	}
 	strcat(wizfi360.CommandBuffer, ",");
@@ -943,6 +958,8 @@ void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 /*
@@ -959,12 +976,12 @@ void WIZFI360_AT_MqttConnectToBroker(WIZFI360_MqttAuthModeTypeDef authMode,
  * @param	mqttBrokerPort 	the broker port number
  * @retval	None
  */
-void WIZFI360_AT_MqttDisconnectFromBroker()
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttDisconnectFromBroker()
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 
 	// The length of the command (AT+MQTTDIS<CR><LF>)
@@ -975,7 +992,7 @@ void WIZFI360_AT_MqttDisconnectFromBroker()
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -1009,6 +1026,8 @@ void WIZFI360_AT_MqttDisconnectFromBroker()
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 
@@ -1021,18 +1040,18 @@ void WIZFI360_AT_MqttDisconnectFromBroker()
  * @param	message	Defines the message to be published (must be '\0' terminated!)
  * @retval	None
  */
-void WIZFI360_AT_MqttPublishMessage(const char* message)
+WIZFI360_StatusTypeDef WIZFI360_AT_MqttPublishMessage(const char* message)
 {
 	// If there is an ongoing AT command...
 	if (wizfi360.ExpectingResponse)
 	{
-		// TODO: Error handling
+		return WIZFI360_BUSY;
 	}
 	// TODO Change to: if is not connected to broker
 	// If the module is not in station mode...
 	if (wizfi360.WifiMode != WIZFI360_MODE_STATION)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// The length of the command (example: AT+MQTTPUB="HelloWorld!"<CR><LF>)
@@ -1045,7 +1064,7 @@ void WIZFI360_AT_MqttPublishMessage(const char* message)
 	// If the command is too long...
 	if (cmdLength >= WIZFI360_MAX_CMD_LEN)
 	{
-		// TODO: Error handling
+		return WIZFI360_ERROR;
 	}
 
 	// Write the command id into wizfi360 structure
@@ -1083,6 +1102,8 @@ void WIZFI360_AT_MqttPublishMessage(const char* message)
 		// We expect an echo for this command
 		wizfi360.ExpectingEcho = 1;
 	}
+
+	return WIZFI360_OK;
 }
 
 /*********************************************************************************************/
