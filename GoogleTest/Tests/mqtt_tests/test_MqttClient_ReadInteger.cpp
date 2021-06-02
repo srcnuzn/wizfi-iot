@@ -13,7 +13,7 @@ extern "C" {
 }
 
 
-TEST(MqttClient_ReadInteger, ReadsIntegerValueFromMessage)
+TEST(test_MqttClient_ReadInteger, ReadsIntegerValueFromMessage)
 {
 	char message[] = "{\"intVal\": 3}";
 	int result = MqttClient_ReadInteger(message, "intVal");

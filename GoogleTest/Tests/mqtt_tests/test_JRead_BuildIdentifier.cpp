@@ -14,7 +14,7 @@ extern void JRead_BuildIdentifier(const char* description, char* ident_out, uint
 }
 
 
-TEST(JRead_BuildIdentifier, IdentifierBuiltCorrectly)
+TEST(test_JRead_BuildIdentifier, IdentifierBuiltCorrectly)
 {
 	char description[] = "intVal";
 	const char expected[] = "{'intVal'";

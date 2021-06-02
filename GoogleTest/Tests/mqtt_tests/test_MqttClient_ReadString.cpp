@@ -13,7 +13,7 @@ extern "C" {
 }
 
 
-TEST(MqttClient_ReadString, ReadsStringFromMessage)
+TEST(test_MqttClient_ReadString, ReadsStringFromMessage)
 {
 	char message[] = "{\"astring\" : \"This is a string\"}";
 	char expected[] = "This is a string";

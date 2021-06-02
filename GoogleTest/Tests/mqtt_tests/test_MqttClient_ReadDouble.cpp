@@ -13,7 +13,7 @@ extern "C" {
 }
 
 
-TEST(MqttClient_ReadDouble, ReadsDoubleFromMessage)
+TEST(test_MqttClient_ReadDouble, ReadsDoubleFromMessage)
 {
 	char message[] = "{\"doubleVal\": 3.532134}";
 	double result = MqttClient_ReadDouble(message, "doubleVal");

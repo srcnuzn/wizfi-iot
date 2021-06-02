@@ -22,7 +22,7 @@ static void User_CommandErrorCallback()
 	isExecuted = 1;
 }
 
-TEST(WIZFI360_RegisterCommandErrorCallback, UserCallbackGetsRegistered)
+TEST(test_WIZFI360_RegisterCommandErrorCallback, UserCallbackGetsRegistered)
 {
 	WIZFI360_Initialize();
 
@@ -31,7 +31,7 @@ TEST(WIZFI360_RegisterCommandErrorCallback, UserCallbackGetsRegistered)
 	ASSERT_EQ(wizfi360.CommandErrorCallback, User_CommandErrorCallback);
 }
 
-TEST(WIZFI360_RegisterCommandErrorCallback, ErrorTagReceived_UserCallbackFires)
+TEST(test_WIZFI360_RegisterCommandErrorCallback, ErrorTagReceived_UserCallbackFires)
 {
 	WIZFI360_Initialize();
 

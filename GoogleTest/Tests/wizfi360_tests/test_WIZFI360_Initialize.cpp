@@ -24,7 +24,7 @@ extern "C" {
 }
 
 
-TEST(WIZFI360_Initialize, CommandBufferGetsReset) {
+TEST(test_WIZFI360_Initialize, CommandBufferGetsReset) {
 
 	wizfi360.CommandBuffer[0] = 'A';
 	wizfi360.CommandLength = 32;
@@ -38,7 +38,7 @@ TEST(WIZFI360_Initialize, CommandBufferGetsReset) {
 }
 
 
-TEST(WIZFI360_Initialize, CallbacksInitializeToDefault) {
+TEST(test_WIZFI360_Initialize, CallbacksInitializeToDefault) {
 
 	for (int i = 0; i < WIZFI360_MAX_SUBTOPIC_CALLBACKS; i++)
 	{
@@ -65,7 +65,7 @@ TEST(WIZFI360_Initialize, CallbacksInitializeToDefault) {
 	ASSERT_EQ(wizfi360.WifiDisconnectedCallback, DefaultWifiDisconnectedCallback);
 }
 
-TEST(WIZFI360_Initialize, ScanVariablesReset) {
+TEST(test_WIZFI360_Initialize, ScanVariablesReset) {
 
 	wizfi360.EchoCharsReceived = 10;
 
