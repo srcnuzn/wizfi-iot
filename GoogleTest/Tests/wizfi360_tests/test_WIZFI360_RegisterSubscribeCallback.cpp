@@ -42,6 +42,12 @@ static void SubTopicReceivedCallback(char* message)
 	strcpy(received_msg, message);
 }
 
+static void AnotherSubTopicReceivedCallback(char* message)
+{
+	execution_ctr++;
+	strcpy(received_msg, message);
+}
+
 TEST_F(test_WIZFI360_RegisterSubTopicCallback, UserCallbackGetsRegistered)
 {
 	WIZFI360_Initialize();
@@ -178,6 +184,40 @@ TEST_F(test_WIZFI360_RegisterSubTopicCallback, MultipleTopicsReceived_Registered
 
 	ASSERT_EQ(execution_ctr, 1);
 	ASSERT_STREQ(received_msg, subtopic_msg);
+}
+
+
+TEST_F(test_WIZFI360_RegisterSubTopicCallback, MultipleTopicsReceived_RegisteredSubTopicMessageReceivedCorrectly_5)
+{
+	WIZFI360_Initialize();
+
+	WIZFI360_RegisterSubTopicCallback(subtopic, SubTopicReceivedCallback);
+	WIZFI360_RegisterSubTopicCallback(another_subtopic, AnotherSubTopicReceivedCallback);
+
+	WIZFI360_Start();
+
+	WIZFI360_UART_BytesReceived(subtopic, strlen(subtopic));
+	WIZFI360_UART_BytesReceived(" -> ", strlen(" -> "));
+	WIZFI360_UART_BytesReceived(subtopic_msg, strlen(subtopic_msg));
+	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
+
+	for (int i = 0; i < 10; i++)
+		WIZFI360_Process();
+
+	ASSERT_EQ(execution_ctr, 1);
+	ASSERT_STREQ(received_msg, subtopic_msg);
+
+	WIZFI360_UART_BytesReceived(another_subtopic, strlen(another_subtopic));
+	WIZFI360_UART_BytesReceived(" -> ", strlen(" -> "));
+	WIZFI360_UART_BytesReceived(another_subtopic_msg, strlen(another_subtopic_msg));
+	WIZFI360_UART_BytesReceived("\r\n", strlen("\r\n"));
+
+	for (int i = 0; i < 10; i++)
+		WIZFI360_Process();
+
+	ASSERT_EQ(execution_ctr, 2);
+	ASSERT_STREQ(received_msg, another_subtopic_msg);
+
 }
 
 
