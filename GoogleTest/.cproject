@@ -107,7 +107,7 @@
                                 								
                                 <option id="gnu.cpp.link.option.debugging.codecov.2070968048" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.cpp.link.option.debugging.codecov" value="true" valueType="boolean"/>
                                 								
-                                <option id="gnu.cpp.link.option.debugging.gprof.1870553068" name="Generate gprof information (-pg)" superClass="gnu.cpp.link.option.debugging.gprof" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+                                <option id="gnu.cpp.link.option.debugging.gprof.1870553068" name="Generate gprof information (-pg)" superClass="gnu.cpp.link.option.debugging.gprof" useByScannerDiscovery="false" value="false" valueType="boolean"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1977413171" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
                                     									
