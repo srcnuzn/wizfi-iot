@@ -42,7 +42,9 @@ static void SubTopic3Received(char* message);
  */
 void MqttClient_Publish()
 {
-	MqttClient_PublishInteger("time", HAL_GetTick());
+	MqttClient_PublishInteger("int", HAL_GetTick());
+	MqttClient_PublishDouble("double", 0.5467*(double)(HAL_GetTick()));
+	MqttClient_PublishString("string", "this is a string");
 }
 
 /*
@@ -75,7 +77,10 @@ void MqttClient_RegisterUserCallbacks()
  */
 static void SubTopic1Received(char* message)
 {
-	// int a = MqttClient_ReadInteger(message, description);
+	int i = MqttClient_ReadInteger(message, "int");
+	double d = MqttClient_ReadDouble(message, "double");
+	const char* s[64];
+	int stringSuccess = MqttClient_ReadString(message, "string", 64, s);
 	__NOP();
 }
 
