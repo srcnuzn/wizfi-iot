@@ -20,7 +20,9 @@
 /*********************************************************************************************/
 /* Private function prototypes --------------------------------------------------------------*/
 
-static void TestTopicReceived(char* message);
+static void SubTopic1Received(char* message);
+static void SubTopic2Received(char* message);
+static void SubTopic3Received(char* message);
 
 /*********************************************************************************************/
 /* Implemetation of required application-specific functions ---------------------------------*/
@@ -50,9 +52,11 @@ void MqttClient_Publish()
  * 				- MqttClient_RegisterSubscribeCallback
  * @retval	None
  */
-void MqttClient_RegisterCallbacks()
+void MqttClient_RegisterUserCallbacks()
 {
-	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_1, TestTopicReceived);
+	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_1, SubTopic1Received);
+	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_2, SubTopic2Received);
+	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_3, SubTopic3Received);
 }
 
 /*********************************************************************************************/
@@ -69,10 +73,43 @@ void MqttClient_RegisterCallbacks()
  * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
  * @retval	None
  */
-static void TestTopicReceived(char* message)
+static void SubTopic1Received(char* message)
 {
 	// int a = MqttClient_ReadInteger(message, description);
 	__NOP();
 }
 
+/*
+ * @brief	Callback is fired, when MQTT_SUBTOPIC_2 is received.
+ * @note	This is an example function to demonstrate how the callback registration works.
+ * @note	To read the JSON-message, following functions can be used:
+ * 				- MqttClient_ReadInteger
+ * 				- MqttClient_ReadString
+ * 				- MqttClient_ReadBoolean
+ * 				- MqttClient_ReadDouble
+ * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
+ * @retval	None
+ */
+static void SubTopic2Received(char* message)
+{
+	// int a = MqttClient_ReadInteger(message, description);
+	__NOP();
+}
+
+/*
+ * @brief	Callback is fired, when MQTT_SUBTOPIC_2 is received.
+ * @note	This is an example function to demonstrate how the callback registration works.
+ * @note	To read the JSON-message, following functions can be used:
+ * 				- MqttClient_ReadInteger
+ * 				- MqttClient_ReadString
+ * 				- MqttClient_ReadBoolean
+ * 				- MqttClient_ReadDouble
+ * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
+ * @retval	None
+ */
+static void SubTopic3Received(char* message)
+{
+	// int a = MqttClient_ReadInteger(message, description);
+	__NOP();
+}
 /*********************************************************************************************/

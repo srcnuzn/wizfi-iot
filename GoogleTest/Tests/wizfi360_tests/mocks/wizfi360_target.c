@@ -35,6 +35,11 @@ void WIZFI360_UART_StartContinousReception()
 
 }
 
+void WIZFI360_UART_Stop()
+{
+
+}
+
 #ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 /**
  * @brief	Send an amount of data to WizFi360 module in interrupt mode.

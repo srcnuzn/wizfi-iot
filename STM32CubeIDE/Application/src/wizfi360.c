@@ -46,12 +46,22 @@ static const char *WIZFI360_TAGS[WIZFI360_NUM_TAGS] = {
 /*********************************************************************************************/
 /* Private function prototypes --------------------------------------------------------------*/
 
-static void ResetDataStructure();
-static void ScanBufferForTags(uint8_t tmpChar, int i);
-static void ScanBufferForEcho(uint8_t tmpChar, int i);
-static void ScanBufferForMqttTopics(uint8_t tmpChar, int i);
+static void ResetModuleState();
+static void ResetCommunicationState();
+static void InitializeCallbacksToDefault();
+static int ScanBufferForTags(uint8_t tmpChar, int i);
+static int ScanBufferForEcho(uint8_t tmpChar, int i);
+static int ScanBufferForMqttTopics(uint8_t tmpChar, int i);
+static int ScanBufferForEndOfMessage(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
-static void DefaultSubscribeCallback(char* message);
+
+void DefaultSubscribeCallback(char* message);
+void DefaultCommandOkCallback(void);
+void DefaultCommandErrorCallback(void);
+void DefaultCommandFailCallback(void);
+void DefaultReadyCallback(void);
+void DefaultWifiConnectedCallback(void);
+void DefaultWifiDisconnectedCallback(void);
 
 /*********************************************************************************************/
 
@@ -67,7 +77,7 @@ WIZFI360_HandlerTypedef wizfi360;
 /* Public functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Initializes the WizFi360 handler and starts listening for UART data.
+  * @brief  Initializes the WizFi360 handler.
   * @note	This function should be called once before using other WIZFI360 functions.
   * @note	We assume, that the module is reset on startup. This assumption might be false.
   * 		To make sure, that the module is reset, either reset the module using the reset
@@ -76,11 +86,36 @@ WIZFI360_HandlerTypedef wizfi360;
   */
 void WIZFI360_Initialize()
 {
-	// Reset the wizfi360 data structure.
-	ResetDataStructure();
+	ResetModuleState();
+
+	ResetCommunicationState();
+
+	InitializeCallbacksToDefault();
+}
+
+/**
+  * @brief  Starts listening for UART data.
+  * @note	This function must be called once after WIZFI360_Initialize.
+  * @note	This function must be called after WIZFI360_Stop was called.
+  * @retval none
+  */
+void WIZFI360_Start()
+{
+	ResetModuleState();
+
+	ResetCommunicationState();
 
 	// Call user specific function
 	WIZFI360_UART_StartContinousReception();
+}
+
+/**
+  * @brief  Stops listening for UART data.
+  * @retval none
+  */
+void WIZFI360_Stop()
+{
+	WIZFI360_UART_Stop();
 }
 
 /**
@@ -94,8 +129,6 @@ void WIZFI360_Process()
 	// The amount of received bytes.
 	uint32_t bytesAvailable = ring_buffer_num_items(&(wizfi360.UartRxBuffer));
 
-	// TODO: Don't rescan already scanned bytes
-
 	// Go through all bytes in ring buffer...
 	for (int i = 0; i < bytesAvailable; i++)
 	{
@@ -106,28 +139,26 @@ void WIZFI360_Process()
 		ring_buffer_peek(&(wizfi360.UartRxBuffer), &tmpChar, i);
 
 		// Check if ring buffer contains AT command echo
-		ScanBufferForEcho(tmpChar, i+1);
+		if (ScanBufferForEcho(tmpChar, i+1))
+			// We did read from ring-buffer. Thus, break because index is invalid.
+			break;
 
-		// Check if ring buffer contains mqtt message
-		ScanBufferForMqttTopics(tmpChar, i+1);
+		// Check if ring buffer contains subtopic
+		if (ScanBufferForMqttTopics(tmpChar, i+1))
+			// We did read from ring-buffer. Thus, break because index is invalid.
+			break;
+
+		// Check if ring buffer contains subtopic message
+		if (ScanBufferForEndOfMessage(tmpChar, i+1))
+			// We did read from ring-buffer. Thus, break because index is invalid.
+			break;
 
 		// Check if ring buffer contains wizfi360 tags
-		ScanBufferForTags(tmpChar, i+1);
-	}
-}
+		if (ScanBufferForTags(tmpChar, i+1))
+			// We did read from ring-buffer. Thus, break because index is invalid.
+			break;
 
-/**
- * @brief	Resets the WizFi360 module
- * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
- * @retval	None
- */
-void WIZFI360_Reset()
-{
-	#ifdef WIZFI360_EVB_MINI
-		WIZFI360_ResetHard();
-	#elif WIZFI360_EVB_SHIELD
-		WIZFI360_AT_ResetModule();
-	#endif
+	}
 }
 
 /**
@@ -135,14 +166,13 @@ void WIZFI360_Reset()
  * @note	After resetting the module we expect to receive WIZFI360_TAG_READY via UART
  * @retval	None
  */
-void WIZFI360_ResetHard()
+void WIZFI360_Reset()
 {
 	WIZFI360_PreResetHard();
 	WIZFI360_WriteResetPinLow();
 	WIZFI360_Delay(1);
 	WIZFI360_WriteResetPinHigh();
 	WIZFI360_Delay(10);
-
 	WIZFI360_PostResetHard();
 }
 
@@ -179,6 +209,8 @@ void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size)
 {
 	ring_buffer_queue_arr(&(wizfi360.UartRxBuffer), data, size);
 }
+
+/*********************************************************************************************/
 
 /**
   * @brief  Associates a user defined callback function with a subscribe-topic.
@@ -217,57 +249,144 @@ void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
 	wizfi360.NumSubTopicCallbacks++;
 }
 
+/**
+  * @brief  Associates a user defined callback function with ok-response.
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
+void WIZFI360_RegisterCommandOkCallback(void (*func)(void))
+{
+	wizfi360.CommandOkCallback = func;
+}
+
+
+/**
+  * @brief  Associates a user defined callback function with error-response.
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
+void WIZFI360_RegisterCommandErrorCallback(void (*func)(void))
+{
+	wizfi360.CommandErrorCallback = func;
+}
+
+/**
+  * @brief  Associates a user defined callback function with ready-event.
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
+void WIZFI360_RegisterReadyCallback(void (*func)(void))
+{
+	wizfi360.ReadyCallback = func;
+}
+
+/**
+  * @brief  Associates a user defined callback function with connect-failed-event.
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
+void WIZFI360_RegisterWifiConnectFailedCallback(void (*func)(void))
+{
+	wizfi360.WifiConnectFailedCallback= func;
+}
+
+/**
+  * @brief  Associates a user defined callback function with wifi-connected-event.
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
+void WIZFI360_RegisterWifiConnectedCallback(void (*func)(void))
+{
+	wizfi360.WifiConnectedCallback= func;
+}
+
+/**
+  * @brief  Associates a user defined callback function with wifi-disconnected-event.
+  * @param	func 	Pointer to the user-defined callback function.
+  * @retval none
+  */
+void WIZFI360_RegisterWifiDisconnectedCallback(void (*func)(void))
+{
+	wizfi360.WifiConnectedCallback= func;
+}
+
 /*********************************************************************************************/
 /* Private functions ---------------------------------------------------------*/
 
 
 /**
- * @brief	Resets the global wizfi360 handler.
+ * @brief	Resets the wizfi360 state in the handler.
  * @retval	None
  */
-static void ResetDataStructure()
+static void ResetModuleState()
 {
-	/* Initialize ring buffer */
-	ring_buffer_init(&(wizfi360.UartRxBuffer));
-
 	wizfi360.WifiMode = WIZFI360_MODE_STATION;
 
 	wizfi360.EchoMode = WIZFI360_ECHO_ENABLE;
 
-	wizfi360.ExpectingResponse = 0;
-
-	wizfi360.ExpectingEcho = 0;
-
 	wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
+}
 
-	wizfi360.CommandBuffer[0] = '\0';
+/**
+ * @brief	Resets the wizfi360 communication state in the handler.
+ * @retval	None
+ */
+static void ResetCommunicationState()
+{
+	/* Initialize ring buffer */
+	ring_buffer_init(&(wizfi360.UartRxBuffer));
 
-	wizfi360.CommandLength = 0;
-
-	wizfi360.CommandId = -1;
+	wizfi360.MessageIncoming = 0;
 
 	wizfi360.EchoCharsReceived = 0;
-
-	// TODO: Improve data structure reset for registered subtopic callbacks
-	// >>>>>>>
-	wizfi360.MessageIncoming = 0;
 
 	for (int tagId = 0; tagId < WIZFI360_NUM_TAGS; tagId++)
 	{
 		wizfi360.TagCharsReceived[tagId] = 0;
 	}
 
+	for (int topicId = 0; topicId < WIZFI360_MAX_SUBTOPIC_CALLBACKS; topicId++)
+	{
+		wizfi360.SubTopicCharsReceived[topicId] = 0;
+	}
+
+	wizfi360.receivingTopic = 0;
+	wizfi360.cr_found = 0;
+
+	wizfi360.ExpectingResponse = 0;
+	wizfi360.ExpectingEcho = 0;
+
+	wizfi360.CommandBuffer[0] = '\0';
+	wizfi360.CommandLength = 0;
+	wizfi360.CommandId = -1;
+}
+
+/**
+ * @brief	Sets all user-assignable callbacks to default callbacks.
+ * @note	This is needed, to avoid memory access violations / hard faults.
+ * @retval	None
+ */
+static void InitializeCallbacksToDefault()
+{
 	wizfi360.NumSubTopicCallbacks = 0;
 
 	for (int topicId = 0; topicId < WIZFI360_MAX_SUBTOPIC_CALLBACKS; topicId++)
 	{
-		wizfi360.SubTopicCharsReceived[topicId] = 0;
 		wizfi360.SubTopics[topicId][0] = '\0';
 		wizfi360.SubTopicCallbacks[topicId] = DefaultSubscribeCallback;
 	}
 
-	WIZFI360_RegisterSubscribeCallbacks();
-	// <<<<<<<
+	wizfi360.CommandOkCallback = DefaultCommandOkCallback;
+
+	wizfi360.CommandErrorCallback = DefaultCommandErrorCallback;
+
+	wizfi360.WifiConnectFailedCallback = DefaultCommandFailCallback;
+
+	wizfi360.ReadyCallback = DefaultReadyCallback;
+
+	wizfi360.WifiConnectedCallback = DefaultWifiConnectedCallback;
+
+	wizfi360.WifiDisconnectedCallback = DefaultWifiDisconnectedCallback;
 }
 
 
@@ -276,15 +395,15 @@ static void ResetDataStructure()
  * @note	When sending AT commands, the modules sends back the command, if echo mode is not disabled.
  * @param	tmpChar	The character in UART receive buffer, that is being checked.
  * @param	i		The index in UART receive buffer that is being checked.
- * @retval	None
+ * @retval	Returns 1, if something was read from buffer, else 0.
  */
-static void ScanBufferForEcho(uint8_t tmpChar, int i)
+static int ScanBufferForEcho(uint8_t tmpChar, int i)
 {
 	// If we do not except an echo...
 	if (!wizfi360.ExpectingEcho)
 	{
-		// Do nothing.
-		return;
+		// We do not read from the ring buffer.
+		return 0;
 	}
 
 	// If we found a consecutive matching character in the tag...
@@ -304,6 +423,8 @@ static void ScanBufferForEcho(uint8_t tmpChar, int i)
 			wizfi360.ExpectingEcho = 0;
 			// Reset the counter.
 			wizfi360.EchoCharsReceived = 0;
+			// We did  read from the ring buffer.
+			return 1;
 		}
 	}
 	// if we did not find a consecutive matching character, but instead the first character...
@@ -318,6 +439,8 @@ static void ScanBufferForEcho(uint8_t tmpChar, int i)
 		// Reset the counter.
 		wizfi360.EchoCharsReceived = 0;
 	}
+	// We did not read from the ring buffer.
+	return 0;
 }
 
 /**
@@ -326,9 +449,9 @@ static void ScanBufferForEcho(uint8_t tmpChar, int i)
  * @note	Tags can be received as event.
  * @param	tmpChar	The character in UART receive buffer, that is being checked.
  * @param	i		The index in UART receive buffer that is being checked.
- * @retval	None
+ * @retval	Returns 1, if something was read from buffer, else 0.
  */
-static void ScanBufferForTags(uint8_t tmpChar, int i)
+static int ScanBufferForTags(uint8_t tmpChar, int i)
 {
 	// For each tag that could be received from wizfi module...
 	for (WIZFI360_TagIdTypeDef tagId = 0; tagId < WIZFI360_NUM_TAGS; tagId++)
@@ -345,8 +468,12 @@ static void ScanBufferForTags(uint8_t tmpChar, int i)
 				// Handle the tag
 				TagReceivedCallback(tagId, i);
 
+				// TODO: Read from buffer within this function (not within TagReceivedCallback)
+				// We read from the ring buffer.
+
 				// Reset the tag counter.
 				wizfi360.TagCharsReceived[tagId] = 0;
+				return 1;
 			}
 		}
 		// if we did not find a consecutive matching character, but instead the first character...
@@ -362,146 +489,171 @@ static void ScanBufferForTags(uint8_t tmpChar, int i)
 			wizfi360.TagCharsReceived[tagId] = 0;
 		}
 	}
+	// We did not read from the ring buffer.
+	return 0;
 }
 
 
 /**
- * @brief	Checks if the UART receive buffer contains a message of subscribed topic.
+ * @brief	Checks if the UART receive buffer contains a subscribed topic.
  * @note	Topics can be received, when we are connected to the broker.
- * @note	When a topic is received, the associated user-defined callback is called.
  * @param	tmpChar	The character in UART receive buffer, that is being checked.
  * @param	i		The index in UART receive buffer that is being checked.
- * @retval	None
+ * @retval	Returns 1, if something was read from buffer, else 0.
  */
-static void ScanBufferForMqttTopics(uint8_t tmpChar, int i)
+static int ScanBufferForMqttTopics(uint8_t tmpChar, int i)
 {
 	/*
 	 * MqttTopics come as follows: "subtopic -> message\r\n"
 	 *
-	 * This function contains of two parts:
+	 * This function looks for topic string: "subtopic -> "
 	 *
-	 * 		1)  Look for topic string: "subtopic -> "
+	 *	When no message is incoming, we look for the topic string.
+	 * 	When the topic string was found, a message is incoming. The topic
+	 * 	id is stored in receivingTopic variable.
 	 *
-	 * 		    When no message is incoming, we look for the topic string.
-	 * 		    When the topic string was found, a message is incoming. The topic
-	 * 		    id is stored in receivingTopic variable.
-	 *
-	 * 		2)  Look for termination string: "\r\n"
-	 *
-	 * 			When the message is incoming, we look for the CR+LF termination string.
-	 * 			When the termination string is found, we read the message (in between
-	 * 			of topic string and termination string) and raise the corresponding
-	 * 			callback.
 	 */
 
-	// Represents the topicId, if a message is incoming
-	static int receivingTopic = 0;
-	// Helper variable used to detect termination string
-	static int cr_found = 0;
-
 	// If no message is incoming...
-	if (!wizfi360.MessageIncoming)
+	if (wizfi360.MessageIncoming)
 	{
-		// For each topic that could be received from wizfi module...
-		for (int topicId = 0; topicId < wizfi360.NumSubTopicCallbacks; topicId++)
-		{
-			uint32_t CharsFound = wizfi360.SubTopicCharsReceived[topicId];
-			char CharToFind = wizfi360.SubTopics[topicId][CharsFound];
-
-			// If we found a consecutive matching character in the topic string...
-			if (tmpChar == CharToFind)
-			{
-				// We found one more matching character for this topic string.
-				wizfi360.SubTopicCharsReceived[topicId]++;
-
-				// If we found a full topic string in UART receive buffer...
-				if (wizfi360.SubTopicCharsReceived[topicId]
-						== strlen(wizfi360.SubTopics[topicId]))
-				{
-					// The length of the topic string.
-					// TODO: What happens, if uart buffer has unhandled bytes?
-					const int length = strlen(wizfi360.SubTopics[topicId]);
-
-					// A dummy storage for the topic string
-					uint8_t data[length];
-					// Read the topic string into the dummy storage (to clear the buffer)
-					ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), (char*)data, length);
-
-					// Now we scan for the actual message...
-					wizfi360.MessageIncoming = 1;
-					cr_found = 0;
-					// The message belongs to this topicId.
-					receivingTopic = topicId;
-
-					// Reset the counter.
-					wizfi360.SubTopicCharsReceived[topicId] = 0;
-				}
-			}
-			// if we did not find a consecutive matching character, but instead the first character...
-			else if (tmpChar == wizfi360.SubTopics[topicId][0])
-			{
-				// Set the matchCounter to one.
-				wizfi360.SubTopicCharsReceived[topicId] = 1;
-			}
-			// else, if nothing related to the tag was found...
-			else
-			{
-				// Reset the tag counter.
-				wizfi360.SubTopicCharsReceived[topicId] = 0;
-			}
-		}
+		// We do not read from the ring buffer.
+		return 0;
 	}
-	// If there is a message incoming...
-	else
+
+	// For each topic that could be received from wizfi module...
+	for (int topicId = 0; topicId < wizfi360.NumSubTopicCallbacks; topicId++)
 	{
-		// If we did not find '\r' yet...
-		if (!cr_found)
+		uint32_t CharsFound = wizfi360.SubTopicCharsReceived[topicId];
+		char CharToFind = wizfi360.SubTopics[topicId][CharsFound];
+
+		// If we found a consecutive matching character in the topic string...
+		if (tmpChar == CharToFind)
 		{
-			// If the current char is '\r'...
-			if (tmpChar == '\r')
+			// We found one more matching character for this topic string.
+			wizfi360.SubTopicCharsReceived[topicId]++;
+
+			// If we found a full topic string in UART receive buffer...
+			if (wizfi360.SubTopicCharsReceived[topicId]
+					== strlen(wizfi360.SubTopics[topicId]))
 			{
-				// We found '\r'!
-				cr_found = 1;
+				// The length of the topic string.
+				const int length = i; //strlen(wizfi360.SubTopics[topicId]);
+
+				// A dummy storage for the topic string
+				uint8_t data[length];
+				// Read the topic string into the dummy storage (to clear the buffer)
+				ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), (char*)data, length);
+
+				// Now we scan for the actual message...
+				wizfi360.MessageIncoming = 1;
+				wizfi360.cr_found = 0;
+				// The message belongs to this topicId.
+				wizfi360.receivingTopic = topicId;
+
+				// Reset the counter.
+				wizfi360.SubTopicCharsReceived[topicId] = 0;
+
+				// We did  read from the ring buffer.
+				return 1;
 			}
 		}
-		// If we did find '\r' already....
+		// if we did not find a consecutive matching character, but instead the first character...
+		else if (tmpChar == wizfi360.SubTopics[topicId][0])
+		{
+			// Set the matchCounter to one.
+			wizfi360.SubTopicCharsReceived[topicId] = 1;
+		}
+		// else, if nothing related to the tag was found...
 		else
 		{
-			// And if the next char is '\n'...
-			if (tmpChar == '\n')
-			{
-				// We found the message!
-
-				// The length of the message
-				uint32_t length = i - 2;
-				// A storage for the message + '\0' null termination character
-				char message[length + 1];
-				// Read the message data
-				ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), message, length);
-				// Append a null termination character.
-				message[length] = '\0';
-
-				// Raise the callback
-				wizfi360.SubTopicCallbacks[receivingTopic](message);
-
-				// Read the \r\n characters into dummy string (to clear the buffer)
-				char dummy[2];
-				ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), dummy, 2);
-
-				// The incoming message was fully read. We are ready for new messages.
-				wizfi360.MessageIncoming = 0;
-			}
-			// If the next char was not '\n'...
-			else
-			{
-				// We look for CR again.
-				cr_found = 0;
-			}
+			// Reset the tag counter.
+			wizfi360.SubTopicCharsReceived[topicId] = 0;
 		}
-
 	}
+	// We did not read from the ring buffer.
+	return 0;
 }
 
+
+/**
+ * @brief	Checks if the UART receive buffer contains the message of a subscribe topic.
+ * @note	Topics can be received, when we are connected to the broker.
+ * @note	When a topic message is received, the associated user-defined callback is called.
+ * @param	tmpChar	The character in UART receive buffer, that is being checked.
+ * @param	i		The index in UART receive buffer that is being checked.
+ * @retval	Returns 1, if something was read from buffer, else 0.
+ */
+static int ScanBufferForEndOfMessage(uint8_t tmpChar, int i)
+{
+	/*
+	 * MqttTopics come as follows: "subtopic -> message\r\n"
+	 *
+	 * This function looks  for termination string: "\r\n"
+	 *
+	 * 	When the message is incoming, we look for the CR+LF termination string.
+	 * 	When the termination string is found, we read the message and raise the
+	 * 	corresponding callback.
+	 *
+	 */
+
+	if (!wizfi360.MessageIncoming)
+	{
+		// We do not read from the ring buffer.
+		return 0;
+	}
+
+	// If we did not find '\r' yet...
+	if (!wizfi360.cr_found)
+	{
+		// If the current char is '\r'...
+		if (tmpChar == '\r')
+		{
+			// We found '\r'!
+			wizfi360.cr_found = 1;
+		}
+	}
+	// If we did find '\r' already....
+	else
+	{
+		// And if the next char is '\n'...
+		if (tmpChar == '\n')
+		{
+			// We found the message!
+
+			// The length of the message
+			uint32_t length = i - 2;
+			// A storage for the message + '\0' null termination character
+			char message[length + 1];
+			// Read the message data
+			ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), message, length);
+			// Append a null termination character.
+			message[length] = '\0';
+
+			// Raise the callback
+			wizfi360.SubTopicCallbacks[wizfi360.receivingTopic](message);
+
+			// Read the \r\n characters into dummy string (to clear the buffer)
+			char dummy[2];
+			ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), dummy, 2);
+
+			// The incoming message was fully read. We are ready for new messages.
+			wizfi360.MessageIncoming = 0;
+
+			// We did read from the ring buffer.
+			return 1;
+		}
+		// If the next char was not '\n'...
+		else
+		{
+			// We look for CR again.
+			wizfi360.cr_found = 0;
+		}
+	}
+
+	// We did not read from the ring buffer.
+	return 0;
+}
 
 /**
  * @brief	Handles the received tag.
@@ -515,6 +667,8 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 {
 	uint8_t data[length];
 	ring_buffer_dequeue_arr(&(wizfi360.UartRxBuffer), (char*)data, length);
+
+	// TODO: Do something with received data in TagReceivedCallback
 
 	switch(tagId)
 	{
@@ -534,20 +688,16 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		}
 		case WIZFI360_TAG_ID_READY:
 		{
-			ResetDataStructure();
-
-			#ifdef WIZFI360_CALLBACK_USED_MODULE_READY
-			WIZFI360_ModuleReadyCallback();
-			#endif
-
+			ResetModuleState();
+			// Fire callback.
+			wizfi360.ReadyCallback();
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_CONNECTED:
 		{
 			wizfi360.WifiState = WIZFI360_WIFI_CONNECTED;
-			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
-			WIZFI360_WifiConnectedCallback();
-			#endif
+			// Fire callback.
+			wizfi360.WifiConnectedCallback();
 			break;
 		}
 		case WIZFI360_TAG_ID_WIFI_GOT_IP:
@@ -557,9 +707,8 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
 		case WIZFI360_TAG_ID_WIFI_DISCONNECT:
 		{
 			wizfi360.WifiState = WIZFI360_WIFI_DISCONNECTED;
-			#ifdef WIZFI360_CALLBACK_USED_WIFI_CONNECTED
-			WIZFI360_WifiDisconnectedCallback();
-			#endif
+			// Fire callback.
+			wizfi360.WifiDisconnectedCallback();
 			break;
 		}
 		default:
@@ -581,9 +730,39 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
  * @param	message	Unused dummy-parameter to avoid compilation errors.
  * @retval	None
  */
-static void DefaultSubscribeCallback(char* message)
+void DefaultSubscribeCallback(char* message)
 {
+	// Do nothing.
+}
 
+void DefaultCommandOkCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultCommandErrorCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultCommandFailCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultReadyCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultWifiConnectedCallback(void)
+{
+	// Do nothing.
+}
+
+void DefaultWifiDisconnectedCallback(void)
+{
+	// Do nothing.
 }
 
 /*********************************************************************************************/

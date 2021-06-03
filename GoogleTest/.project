@@ -34,7 +34,7 @@
 	<variableList>
 		<variable>
 			<name>APPLICATION_LOC</name>
-			<value>file:/E:/Nextcloud_Soenke/Dokumente_Soenke/Studium_Master%20TU%20Berlin/02_SoSe2021/Mikrokontroller%20Projekt/wizfi-git/wizfi-iot/STM32CubeIDE/Application</value>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/STM32CubeIDE/Application</value>
 		</variable>
 	</variableList>
 </projectDescription>

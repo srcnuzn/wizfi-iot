@@ -72,6 +72,17 @@ void WIZFI360_UART_StartContinousReception()
 	}
 }
 
+/**
+ *	TODO: Comment on WIZFI360_UART_Stop
+ */
+void WIZFI360_UART_Stop()
+{
+	// Abort ongoing UART transmission
+	HAL_UART_Abort(pWizFi360_huart);
+	// Abort ongoing UART reception
+	HAL_UART_AbortReceive(pWizFi360_huart);
+}
+
 #ifdef WIZFI360_UART_TX_MODE_NON_BLOCKING
 /**
  * @brief	Send an amount of data to WizFi360 module in interrupt mode.
