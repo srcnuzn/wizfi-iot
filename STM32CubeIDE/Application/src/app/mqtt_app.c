@@ -20,9 +20,9 @@
 /*********************************************************************************************/
 /* Private function prototypes --------------------------------------------------------------*/
 
-static void SubTopic1Received(char* message);
-static void SubTopic2Received(char* message);
-static void SubTopic3Received(char* message);
+static void SubTopic1Received(const char* message);
+static void SubTopic2Received(const char* message);
+static void SubTopic3Received(const char* message);
 
 /*********************************************************************************************/
 /* Implemetation of required application-specific functions ---------------------------------*/
@@ -75,11 +75,11 @@ void MqttClient_RegisterUserCallbacks()
  * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
  * @retval	None
  */
-static void SubTopic1Received(char* message)
+static void SubTopic1Received(const char* message)
 {
 	int i = MqttClient_ReadInteger(message, "int");
 	double d = MqttClient_ReadDouble(message, "double");
-	const char* s[64];
+	const char s[64];
 	int stringSuccess = MqttClient_ReadString(message, "string", 64, s);
 	__NOP();
 }
@@ -95,7 +95,7 @@ static void SubTopic1Received(char* message)
  * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
  * @retval	None
  */
-static void SubTopic2Received(char* message)
+static void SubTopic2Received(const char* message)
 {
 	// int a = MqttClient_ReadInteger(message, description);
 	__NOP();
@@ -112,7 +112,7 @@ static void SubTopic2Received(char* message)
  * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
  * @retval	None
  */
-static void SubTopic3Received(char* message)
+static void SubTopic3Received(const char* message)
 {
 	// int a = MqttClient_ReadInteger(message, description);
 	__NOP();

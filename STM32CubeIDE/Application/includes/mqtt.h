@@ -23,7 +23,7 @@ void MqttClient_Process();
 
 void MqttClient_SubscribeTo(const char* topic);
 
-void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(char*));
+void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(const char*));
 
 void MqttClient_PublishInteger(const char* description, const int value);
 

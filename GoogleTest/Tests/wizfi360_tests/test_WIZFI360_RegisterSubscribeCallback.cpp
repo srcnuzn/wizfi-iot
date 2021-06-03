@@ -36,13 +36,13 @@ class test_WIZFI360_RegisterSubTopicCallback : public ::testing::Test
 };
 
 
-static void SubTopicReceivedCallback(char* message)
+static void SubTopicReceivedCallback(const char* message)
 {
 	execution_ctr++;
 	strcpy(received_msg, message);
 }
 
-static void AnotherSubTopicReceivedCallback(char* message)
+static void AnotherSubTopicReceivedCallback(const char* message)
 {
 	execution_ctr++;
 	strcpy(received_msg, message);

@@ -18,7 +18,7 @@
 /*********************************************************************************************/
 /* Private function prototypes --------------------------------------------------------------*/
 
-static void TestTopicReceived(char* message);
+static void TestTopicReceived(const char* message);
 
 /*********************************************************************************************/
 /* Implemetation of required application-specific functions ---------------------------------*/
@@ -67,7 +67,7 @@ void MqttClient_RegisterUserCallbacks()
  * @param	message string-paramater: The message that is being received with MQTT_SUBTOPIC_1.
  * @retval	None
  */
-static void TestTopicReceived(char* message)
+static void TestTopicReceived(const char* message)
 {
 	// int a = MqttClient_ReadInteger(message, description);
 

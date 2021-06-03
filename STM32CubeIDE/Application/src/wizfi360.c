@@ -55,7 +55,7 @@ static int ScanBufferForMqttTopics(uint8_t tmpChar, int i);
 static int ScanBufferForEndOfMessage(uint8_t tmpChar, int i);
 static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length);
 
-void DefaultSubscribeCallback(char* message);
+void DefaultSubscribeCallback(const char* message);
 void DefaultCommandOkCallback(void);
 void DefaultCommandErrorCallback(void);
 void DefaultCommandFailCallback(void);
@@ -106,6 +106,7 @@ void WIZFI360_Start()
 	ResetCommunicationState();
 
 	// Call user specific function
+	WIZFI360_WriteResetPinHigh();
 	WIZFI360_UART_StartContinousReception();
 }
 
@@ -222,7 +223,7 @@ void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size)
   * @param	func 	Pointer to the user-defined callback function.
   * @retval none
   */
-void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*))
+void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(const char*))
 {
 	if (wizfi360.NumSubTopicCallbacks >= WIZFI360_MAX_SUBTOPIC_CALLBACKS)
 	{
@@ -730,7 +731,7 @@ static void TagReceivedCallback(WIZFI360_TagIdTypeDef tagId, int length)
  * @param	message	Unused dummy-parameter to avoid compilation errors.
  * @retval	None
  */
-void DefaultSubscribeCallback(char* message)
+void DefaultSubscribeCallback(const char* message)
 {
 	// Do nothing.
 }

@@ -14,7 +14,7 @@ extern "C" {
 
 	extern WIZFI360_HandlerTypedef wizfi360;
 
-	extern void DefaultSubscribeCallback(char* message);
+	extern void DefaultSubscribeCallback(const char* message);
 	extern void DefaultCommandOkCallback(void);
 	extern void DefaultCommandErrorCallback(void);
 	extern void DefaultCommandFailCallback(void);

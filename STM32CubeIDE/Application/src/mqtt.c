@@ -365,7 +365,7 @@ void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t lay
   * @param	func The function that is called
   * @retval none
   */
-void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(char*))
+void MqttClient_RegisterSubscribeCallback(const char* topic, void (*func)(const char*))
 {
 	WIZFI360_RegisterSubTopicCallback(topic, func);
 }

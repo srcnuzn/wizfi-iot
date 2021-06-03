@@ -323,7 +323,7 @@ typedef struct __WIZFI360_HandlerTypedef
 	/* Callbacks ----------------------------------------------------------------------------------------------------------*/
 
 	void (*SubTopicCallbacks[
-		WIZFI360_MAX_SUBTOPIC_CALLBACKS]) (char*);		/*!< List of callback functions (mapped to SubTopics) */
+		WIZFI360_MAX_SUBTOPIC_CALLBACKS]) (const char*);		/*!< List of callback functions (mapped to SubTopics) */
 
 	void (*CommandOkCallback)(void);
 
@@ -390,7 +390,7 @@ void WIZFI360_AT_HandleResponse(WIZFI360_TagIdTypeDef tagId);
 
 void WIZFI360_UART_BytesReceived(const char *data, ring_buffer_size_t size);
 
-void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(char*));
+void WIZFI360_RegisterSubTopicCallback(const char* topic, void (*func)(const char*));
 void WIZFI360_RegisterCommandOkCallback(void (*func)(void));
 void WIZFI360_RegisterCommandErrorCallback(void (*func)(void));
 void WIZFI360_RegisterReadyCallback(void (*func)(void));
