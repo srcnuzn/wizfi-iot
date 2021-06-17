@@ -194,7 +194,7 @@ WIZFI360_State WIZFI360_GetState()
 	return WIZFI360_STATE_READY;
 }
 
-WIZFI360_WifiState WIZFI360_GetWifiState()
+WIZFI360_WifiStateTypeDef WIZFI360_GetWifiState()
 {
 	return wizfi360.WifiState;
 }

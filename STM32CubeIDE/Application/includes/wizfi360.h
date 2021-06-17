@@ -138,7 +138,7 @@ typedef enum
 {
 	WIZFI360_WIFI_DISCONNECTED,				/*!< Wifi is not connected. */
 	WIZFI360_WIFI_CONNECTED,				/*!< Wifi is connected.*/
-} WIZFI360_WifiState;
+} WIZFI360_WifiStateTypeDef;
 
 
 /**
@@ -302,7 +302,7 @@ typedef struct __WIZFI360_HandlerTypedef
 	uint8_t SubTopicCharsReceived[
 		WIZFI360_MAX_SUBTOPIC_CALLBACKS];				/*!< Amount of consecutive topic characters found in UartRxBuffer. */
 
-	uint8_t WifiState;									/*!< Indicates, weather the module is connected to an AP or not. */
+	WIZFI360_WifiStateTypeDef WifiState;				/*!< Indicates, weather the module is connected to an AP or not. */
 
 	ring_buffer_t UartRxBuffer;							/*!< Ring-buffer for received UART data. */
 
@@ -356,7 +356,7 @@ void WIZFI360_Reset();
 
 WIZFI360_State WIZFI360_GetState();
 
-WIZFI360_WifiState WIZFI360_GetWifiState();
+WIZFI360_WifiStateTypeDef WIZFI360_GetWifiState();
 
 WIZFI360_StatusTypeDef WIZFI360_AT_Test();
 
