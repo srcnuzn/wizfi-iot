@@ -47,7 +47,7 @@ extern "C" {
 */
 
 /*! Define number of states in the state enum */
-#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 20
+#define MQTTCLIENTSTATEMACHINE_STATE_COUNT 22
 
 /*! Define dimension of the state configuration vector for orthogonal states. */
 #define MQTTCLIENTSTATEMACHINE_MAX_ORTHOGONAL_STATES 1
@@ -64,10 +64,12 @@ extern "C" {
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_START 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_UNDEFINED_R1_STOP 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE 0
-#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_CONNECTTOBROKER 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_ENTRY 0
-#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_PUBLISHTOPIC 0
-#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_WAIT 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_PUBLISHMESSAGES 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_PUBLISHMESSAGES_R1_PUBLISHTOPIC 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_PUBLISHMESSAGES_R1_WAIT 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_CONNECTTOBROKER 0
+#define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_ONLINE_R1_RECEIVEMESSAGES 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_SETTOPIC 0
 #define SCVI_MQTTCLIENTSTATEMACHINE_MAIN_REGION_OFFLINE_R1_ENTRY 0
@@ -89,10 +91,12 @@ typedef enum
 	MqttClientStatemachine_main_region_Undefined_r1_Start,
 	MqttClientStatemachine_main_region_Undefined_r1_Stop,
 	MqttClientStatemachine_main_region_Online,
-	MqttClientStatemachine_main_region_Online_r1_ConnectToBroker,
 	MqttClientStatemachine_main_region_Online_r1_Entry,
-	MqttClientStatemachine_main_region_Online_r1_PublishTopic,
-	MqttClientStatemachine_main_region_Online_r1_Wait,
+	MqttClientStatemachine_main_region_Online_r1_PublishMessages,
+	MqttClientStatemachine_main_region_Online_r1_PublishMessages_r1_PublishTopic,
+	MqttClientStatemachine_main_region_Online_r1_PublishMessages_r1_Wait,
+	MqttClientStatemachine_main_region_Online_r1_ConnectToBroker,
+	MqttClientStatemachine_main_region_Online_r1_ReceiveMessages,
 	MqttClientStatemachine_main_region_Offline,
 	MqttClientStatemachine_main_region_Offline_r1_SetTopic,
 	MqttClientStatemachine_main_region_Offline_r1_Entry,
@@ -108,6 +112,7 @@ struct MqttClientStatemachineIface
 {
 	sc_integer dT;
 	sc_integer publishInterval;
+	sc_boolean publishingEnabled;
 	sc_integer watchdogTimer;
 };
 
@@ -143,6 +148,8 @@ struct MqttClientStatemachineIfaceWizFi360
 	sc_boolean testModule_raised;
 	sc_observable restartModule;
 	sc_boolean restartModule_raised;
+	sc_observable ledOn;
+	sc_boolean ledOn_raised;
 	sc_observable resetModule;
 	sc_boolean resetModule_raised;
 	sc_observable start;
@@ -158,6 +165,7 @@ struct MqttClientStatemachineIfaceWizFi360
 	sc_integer testFailCounter;
 	sc_integer restartFailCounter;
 	sc_integer resetFailCounter;
+	sc_boolean ledState;
 };
 
 
@@ -169,9 +177,9 @@ struct MqttClientStatemachineTimeEvents
 	sc_boolean mqttClientStatemachine_main_region_Undefined_r1_ResetModule_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Undefined_r1_TestModule_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Undefined_r1_RestartModule_tev0_raised;
+	sc_boolean mqttClientStatemachine_main_region_Online_r1_PublishMessages_r1_PublishTopic_tev0_raised;
+	sc_boolean mqttClientStatemachine_main_region_Online_r1_PublishMessages_r1_Wait_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Online_r1_ConnectToBroker_tev0_raised;
-	sc_boolean mqttClientStatemachine_main_region_Online_r1_PublishTopic_tev0_raised;
-	sc_boolean mqttClientStatemachine_main_region_Online_r1_Wait_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Offline_r1_SetTopic_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Offline_r1_Entry_tev0_raised;
 	sc_boolean mqttClientStatemachine_main_region_Offline_r1_SetStationMode_tev0_raised;
@@ -198,9 +206,9 @@ struct MqttClientStatemachineTimeEventsEvBuf {
 	sc_boolean MqttClientStatemachine_main_region_Undefined_r1_ResetModule_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Undefined_r1_TestModule_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Undefined_r1_RestartModule_time_event_0_raised;
+	sc_boolean MqttClientStatemachine_main_region_Online_r1_PublishMessages_r1_PublishTopic_time_event_0_raised;
+	sc_boolean MqttClientStatemachine_main_region_Online_r1_PublishMessages_r1_Wait_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Online_r1_ConnectToBroker_time_event_0_raised;
-	sc_boolean MqttClientStatemachine_main_region_Online_r1_PublishTopic_time_event_0_raised;
-	sc_boolean MqttClientStatemachine_main_region_Online_r1_Wait_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Offline_r1_SetTopic_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Offline_r1_Entry_time_event_0_raised;
 	sc_boolean MqttClientStatemachine_main_region_Offline_r1_SetStationMode_time_event_0_raised;
@@ -259,6 +267,10 @@ extern void mqttClientStatemachine_set_dT(MqttClientStatemachine* handle, sc_int
 extern sc_integer mqttClientStatemachine_get_publishInterval(const MqttClientStatemachine* handle);
 /*! Sets the value of the variable 'publishInterval' that is defined in the default interface scope. */ 
 extern void mqttClientStatemachine_set_publishInterval(MqttClientStatemachine* handle, sc_integer value);
+/*! Gets the value of the variable 'publishingEnabled' that is defined in the default interface scope. */ 
+extern sc_boolean mqttClientStatemachine_get_publishingEnabled(const MqttClientStatemachine* handle);
+/*! Sets the value of the variable 'publishingEnabled' that is defined in the default interface scope. */ 
+extern void mqttClientStatemachine_set_publishingEnabled(MqttClientStatemachine* handle, sc_boolean value);
 /*! Gets the value of the variable 'watchdogTimer' that is defined in the default interface scope. */ 
 extern sc_integer mqttClientStatemachine_get_watchdogTimer(const MqttClientStatemachine* handle);
 /*! Sets the value of the variable 'watchdogTimer' that is defined in the default interface scope. */ 
@@ -323,6 +335,12 @@ extern sc_observable* mqttClientStatemachine_WizFi360_get_restartModule(MqttClie
 /*! Checks if the out event 'restartModule' that is defined in the interface scope 'WizFi360' has been raised. */ 
 extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_restartModule(const MqttClientStatemachine* handle);
 
+/*! Returns the observable for the out event 'ledOn' that is defined in the interface scope 'WizFi360'. */ 
+extern sc_observable* mqttClientStatemachine_WizFi360_get_ledOn(MqttClientStatemachine* handle);
+
+/*! Checks if the out event 'ledOn' that is defined in the interface scope 'WizFi360' has been raised. */ 
+extern sc_boolean mqttClientStatemachine_WizFi360_is_raised_ledOn(const MqttClientStatemachine* handle);
+
 /*! Returns the observable for the out event 'resetModule' that is defined in the interface scope 'WizFi360'. */ 
 extern sc_observable* mqttClientStatemachine_WizFi360_get_resetModule(MqttClientStatemachine* handle);
 
@@ -369,6 +387,10 @@ extern void mqttClientStatemachine_WizFi360_set_restartFailCounter(MqttClientSta
 extern sc_integer mqttClientStatemachine_WizFi360_get_resetFailCounter(const MqttClientStatemachine* handle);
 /*! Sets the value of the variable 'resetFailCounter' that is defined in the interface scope 'WizFi360'. */ 
 extern void mqttClientStatemachine_WizFi360_set_resetFailCounter(MqttClientStatemachine* handle, sc_integer value);
+/*! Gets the value of the variable 'ledState' that is defined in the interface scope 'WizFi360'. */ 
+extern sc_boolean mqttClientStatemachine_WizFi360_get_ledState(const MqttClientStatemachine* handle);
+/*! Sets the value of the variable 'ledState' that is defined in the interface scope 'WizFi360'. */ 
+extern void mqttClientStatemachine_WizFi360_set_ledState(MqttClientStatemachine* handle, sc_boolean value);
 
 /*!
  * Checks whether the state machine is active (until 2.4.1 this method was used for states).

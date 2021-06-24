@@ -18,11 +18,40 @@
 #include "mqtt_required.h"
 
 /*********************************************************************************************/
+/* Private defines  --------------------------------------------------------------*/
+
+#ifdef MQTT_SUBSCRIBE_MODE
+#define MQTT_SUBTOPIC_1 	"mc-labor/soenke/test"
+#define MQTT_SUBTOPIC_2 	"mc-labor/soenke/test2"
+#define MQTT_SUBTOPIC_3 	"mc-labor/soenke/test3"
+#endif
+
+/*********************************************************************************************/
 /* Private function prototypes --------------------------------------------------------------*/
 
+#ifdef MQTT_SUBSCRIBE_MODE
 static void SubTopic1Received(const char* message);
 static void SubTopic2Received(const char* message);
 static void SubTopic3Received(const char* message);
+#endif
+
+/*********************************************************************************************/
+/* Private variables  --------------------------------------------------------------*/
+
+#ifdef MQTT_SUBSCRIBE_MODE
+
+#define MAX_STRING_SIZE 64
+
+static uint32_t SubTopic1ReceivedCounter = 0;
+static uint32_t SubTopic2ReceivedCounter = 0;
+static uint32_t SubTopic3ReceivedCounter = 0;
+
+static int SubTopic1ReceivedInteger = 0;
+static double SubTopic1ReceivedDouble = 0.0;
+static char SubTopic1ReceivedString[MAX_STRING_SIZE];
+static int SubTopic1ReceivedStringSuccessfully = 0;
+
+#endif
 
 /*********************************************************************************************/
 /* Implemetation of required application-specific functions ---------------------------------*/
@@ -42,9 +71,11 @@ static void SubTopic3Received(const char* message);
  */
 void MqttClient_Publish()
 {
+#ifdef MQTT_PUBLISH_MODE
 	MqttClient_PublishInteger("int", HAL_GetTick());
 	MqttClient_PublishDouble("double", 0.5467*(double)(HAL_GetTick()));
 	MqttClient_PublishString("string", "this is a string");
+#endif
 }
 
 /*
@@ -56,14 +87,17 @@ void MqttClient_Publish()
  */
 void MqttClient_RegisterUserCallbacks()
 {
+#ifdef MQTT_SUBSCRIBE_MODE
 	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_1, SubTopic1Received);
 	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_2, SubTopic2Received);
 	MqttClient_RegisterSubscribeCallback(MQTT_SUBTOPIC_3, SubTopic3Received);
+#endif
 }
 
 /*********************************************************************************************/
 /* Private function definitions -------------------------------------------------------------*/
 
+#ifdef MQTT_SUBSCRIBE_MODE
 /*
  * @brief	Callback is fired, when MQTT_SUBTOPIC_1 is received.
  * @note	This is an example function to demonstrate how the callback registration works.
@@ -77,11 +111,11 @@ void MqttClient_RegisterUserCallbacks()
  */
 static void SubTopic1Received(const char* message)
 {
-	int i = MqttClient_ReadInteger(message, "int");
-	double d = MqttClient_ReadDouble(message, "double");
-	const char s[64];
-	int stringSuccess = MqttClient_ReadString(message, "string", 64, s);
-	__NOP();
+	SubTopic1ReceivedCounter++;
+	SubTopic1ReceivedInteger = MqttClient_ReadInteger(message, "int");
+	SubTopic1ReceivedDouble = MqttClient_ReadDouble(message, "double");
+	SubTopic1ReceivedStringSuccessfully = MqttClient_ReadString(message,
+			"string", MAX_STRING_SIZE, SubTopic1ReceivedString);
 }
 
 /*
@@ -97,8 +131,7 @@ static void SubTopic1Received(const char* message)
  */
 static void SubTopic2Received(const char* message)
 {
-	// int a = MqttClient_ReadInteger(message, description);
-	__NOP();
+	SubTopic2ReceivedCounter++;
 }
 
 /*
@@ -114,7 +147,7 @@ static void SubTopic2Received(const char* message)
  */
 static void SubTopic3Received(const char* message)
 {
-	// int a = MqttClient_ReadInteger(message, description);
-	__NOP();
+	SubTopic3ReceivedCounter++;
 }
 /*********************************************************************************************/
+#endif
