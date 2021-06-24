@@ -38,13 +38,39 @@
 // Sample time of mqtt process in milliseconds
 #define SAMPLE_TIME	  100
 
+#ifdef MQTT_SUBSCRIBE_MODE
+#ifdef MQTT_PUBLISH_MODE
+#error("Only select one mode! Cannot publish and subscribe simultaneously!");
+#endif
+#endif
+
+#ifndef MQTT_SUBSCRIBE_MODE
+#ifndef MQTT_PUBLISH_MODE
+#error("One mode must be selected. Either define MQTT_PUBLISH_MODE or MQTT_SUBSCRIBE_MODE!");
+#endif
+#endif
+
+#ifdef MQTT_PUBLISH_MODE
 #ifndef MQTT_PUBTOPIC
 	#error("MQTT_PUBTOPIC must be defined!");
 #endif
+#endif
+
+#ifdef MQTT_SUBSCRIBE_MODE
 #ifndef MQTT_SUBTOPIC_FILTER
 	#error("MQTT_SUBTOPIC_FILTER must be defined!");
 #endif
+#endif
 
+#ifdef MQTT_PUBLISH_MODE
+#define MQTT_SUBTOPIC_FILTER 	"VrqHi6yYlQPTIgbHkbUT"
+#endif
+
+#ifdef MQTT_SUBSCRIBE_MODE
+#define MQTT_PUBTOPIC 			"dhP6PdgaLcKY3vKcDZPM"
+#define MQTT_PUBLISH_INTERVAL	0
+#define MQTT_PUBLISHING_ENABLED false
+#endif
 
 /*********************************************************************************************/
 
@@ -56,6 +82,7 @@
 
 #define MAX_PUB_MSG_SIZE	128
 static char message[MAX_PUB_MSG_SIZE] = { 0 };
+
 
 // Some time variables (in ms) used for  mqtt process scheduling
 static uint32_t current_time = 0;
@@ -75,9 +102,10 @@ static sc_timer_service_t timer_service;
 
 /* Private function prototypes -----------------------------------------------*/
 
+void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer);
+
 static void mqttClientStatemachine_react_to_events();
 static void mqttClientStatemachine_write_inputs();
-void JRead_BuildIdentifier(const char* description, char* ident_out, uint8_t layer);
 
 static void ATCommandOkCallback();
 static void ATCommandErrorCallback();
@@ -117,6 +145,11 @@ void MqttClient_Initialize()
 	// Set the mqtt publish interval
 	mqttClientStatemachine_set_publishInterval(&sm, MQTT_PUBLISH_INTERVAL);
 
+#ifdef MQTT_PUBLISH_MODE
+	mqttClientStatemachine_set_publishingEnabled(&sm, true);
+#else
+	mqttClientStatemachine_set_publishingEnabled(&sm, false);
+#endif
 	// Enter the state machine
 	mqttClientStatemachine_enter(&sm);
 
@@ -158,7 +191,6 @@ void MqttClient_Process()
 		last_time = current_time;
 	}
 }
-
 
 /**
   * @brief  Writes an integer entry into the JSON publish buffer to be sent.
@@ -210,7 +242,6 @@ void MqttClient_PublishBoolean(const char* description, const int oneOrZero)
 {
 	jwObj_bool( (char*) description, oneOrZero);
 }
-
 
 /**
   * @brief  Extracts integer value from MQTT message
@@ -403,11 +434,13 @@ static void mqttClientStatemachine_write_inputs()
 static void mqttClientStatemachine_react_to_events()
 {
 	if (mqttClientStatemachine_System_is_raised_reset(&sm))
+	{
 		MqttClient_HandleSystemResetRequest();
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_resetModule(&sm))
+	{
 		WIZFI360_Reset();
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_start(&sm))
 	{
 		WIZFI360_Start();
@@ -417,31 +450,39 @@ static void mqttClientStatemachine_react_to_events()
 		WIZFI360_Stop();
 	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_testModule(&sm))
+	{
 		WIZFI360_AT_Test();
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_restartModule(&sm))
+	{
 		WIZFI360_AT_Restart();
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_setStationMode(&sm))
+	{
 		WIZFI360_AT_SetWifiMode(WIZFI360_MODE_STATION);
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_enableDhcp(&sm))
+	{
 		WIZFI360_AT_SetDhcpMode(WIZFI360_MODE_STATION, WIZFI360_DHCP_ENABLE);
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToAccessPoint(&sm))
+	{
 		WIZFI360_AT_ConnectToAccessPoint(WIFI_SSID, WIFI_PASSWORD);
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_configureMqtt(&sm))
+	{
 		WIZFI360_AT_ConfigureMqtt(MQTT_USERNAME, MQTT_PASSWORD,
 				MQTT_CLIENT_ID, MQTT_ALIVE_TIME);
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_setTopic(&sm))
+	{
 		WIZFI360_AT_MqttSetTopic(MQTT_PUBTOPIC, MQTT_SUBTOPIC_FILTER);
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_connectToBroker(&sm))
+	{
 		WIZFI360_AT_MqttConnectToBroker(WIZFI360_MQTT_AUTH_DISABLE,
 		        MQTT_ADDRESS, MQTT_PORT);
-
+	}
 	else if (mqttClientStatemachine_WizFi360_is_raised_publishTopic(&sm))
 	{
 		jwOpen(message, MAX_PUB_MSG_SIZE, JW_OBJECT, JW_COMPACT);
