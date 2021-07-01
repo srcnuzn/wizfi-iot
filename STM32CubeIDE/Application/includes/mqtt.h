@@ -17,6 +17,8 @@
 
 #define MQTT_JSON_FORMATTING_OVERHEAD 10
 
+#define MQTT_JSON_FORMATTING_DOUBLE_LITERALS 2
+
 void MqttClient_Initialize();
 
 void MqttClient_Process();

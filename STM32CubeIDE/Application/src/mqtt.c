@@ -111,6 +111,7 @@ static void ATCommandOkCallback();
 static void ATCommandErrorCallback();
 static void WifiConnectFailedCallback();
 static void WlanModuleReadyCallback();
+double MqttClient_LimitDoublePrecision(const double value, const int precision);
 
 /*********************************************************************************************/
 
@@ -227,7 +228,28 @@ void MqttClient_PublishString(const char* description, const char* value)
   */
 void MqttClient_PublishDouble(const char* description, const double value)
 {
-	jwObj_double( (char*) description, value);
+	double out = MqttClient_LimitDoublePrecision(value, MQTT_JSON_FORMATTING_DOUBLE_LITERALS);
+
+	jwObj_double( (char*) description, out);
+}
+
+
+/**
+  * @brief  Limits the precision of a given double variable.
+  * @note	If precision is smaller than 1, the number is truncated
+  * @param	value Double variable whose precision should be limited
+  * @param	precision Amount of the double's literals that should remain
+  * @retval The double number with limited precision
+  */
+double MqttClient_LimitDoublePrecision(const double value, const int precision)
+{
+	int factor = 1;
+	for(int i = 1; i<=precision; i++)
+	{
+		factor *= 10;
+	}
+	int tmp = value*factor;
+	return (double)tmp/(double)factor;
 }
 
 
